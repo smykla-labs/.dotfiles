@@ -2,11 +2,7 @@
   set --global fish_greeting
 
 # Homebrew
-  if test -x /opt/homebrew/bin/brew
-    /opt/homebrew/bin/brew shellenv | source
-  else if test -x /home/linuxbrew/.linuxbrew/bin/brew
-    /home/linuxbrew/.linuxbrew/bin/brew shellenv | source
-  end
+  /opt/homebrew/bin/brew shellenv | source
 
 # vars
   set --export PROJECTS_PATH $HOME/Projects/github.com
@@ -32,7 +28,7 @@
     --history=
 
 # Atuin
-  type -q atuin && atuin init fish --disable-up-arrow | source
+  atuin init fish --disable-up-arrow | source
 
 # EDITOR
   set --global --export EDITOR vim
@@ -54,19 +50,17 @@
 
 # gcloud cli tool
   set --global --export USE_GKE_GCLOUD_AUTH_PLUGIN "True"
-  test -f "$HOMEBREW_PREFIX/share/google-cloud-sdk/path.fish.inc" && source "$HOMEBREW_PREFIX/share/google-cloud-sdk/path.fish.inc"
+  source "$HOMEBREW_PREFIX/share/google-cloud-sdk/path.fish.inc"
 
 # install direnv hook (https://direnv.net/docs/hook.html#fish)
-  if type -q direnv
-    direnv hook fish | source
-    set --global direnv_fish_mode eval_on_arrow
-  end
+  direnv hook fish | source
+  set --global direnv_fish_mode eval_on_arrow
 
 # starship prompt
-  type -q starship && starship init fish | source
+  starship init fish | source
 
 # jump (https://github.com/gsamokovarov/jump)
-  type -q jump && jump shell fish | source
+  jump shell fish | source
 
 # locale
   set --global --export LC_ALL en_US.UTF-8

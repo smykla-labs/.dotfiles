@@ -1,3 +1,3 @@
-function kls --description "List Kubernetes resources (pods, deployments, services)"
-    $HOME/Projects/github.com/haphamdev/klg/kls.sh $argv
+function kls -d "List Kubernetes resources"
+    $PROJECTS_PATH/haphamdev/klg/kls.sh $argv
 end

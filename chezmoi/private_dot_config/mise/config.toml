@@ -13,3 +13,4 @@ task = "3.45.4"
 
 [settings]
 experimental = true
+idiomatic_version_file_enable_tools = ["ruby"]
