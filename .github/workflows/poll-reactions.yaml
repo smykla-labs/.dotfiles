@@ -16,12 +16,8 @@ jobs:
     name: Poll PR Reactions
     runs-on: ubuntu-24.04
     steps:
-      - name: Checkout .dotfiles (CODEOWNERS only)
+      - name: Checkout repository
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-        with:
-          fetch-depth: 1
-          sparse-checkout: |
-            .github/CODEOWNERS
 
       - name: Generate GitHub App token
         id: generate-token
@@ -31,7 +27,7 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Poll reactions on open PRs
-        uses: docker://ghcr.io/bartsmykla/smyklot:1.7.2
+        uses: bartsmykla/smyklot@v1.7.4
         with:
           args: poll
         env:
