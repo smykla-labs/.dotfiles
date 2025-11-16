@@ -1,5 +1,5 @@
-function mkd --description "Create directory and change into it"
-  mkdir $argv
-  cd $argv
+function mkd -d "Create directory and cd into it"
+  mkdir -p $argv
+  and cd $argv
 end
 

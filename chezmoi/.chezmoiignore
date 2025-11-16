@@ -39,3 +39,7 @@
 
 # Ignore Claude Code plugin marketplaces (managed by Claude Code)
 .claude/plugins/marketplaces/
+
+# Ignore auto-generated fish shell configuration files
+.config/fish/conf.d/omf.fish
+.config/fish/conf.d/rustup.fish

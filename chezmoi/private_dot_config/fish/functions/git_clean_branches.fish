@@ -1,4 +1,4 @@
-function git_clean_branches --description "Clean merged local branches without remote counterpart"
+function git_clean_branches -d "Clean merged local branches without remote counterpart"
   set base_branch develop
 
   # work from our base branch
