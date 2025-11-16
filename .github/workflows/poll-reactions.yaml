@@ -27,7 +27,7 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Poll reactions on open PRs
-        uses: bartsmykla/smyklot@v1.7.4
+        uses: bartsmykla/smyklot@7c4391407dbe1f33e7bc50affdf6d06f3c58759c # v1.7.5
         with:
           args: poll
         env:
