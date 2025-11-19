@@ -31,6 +31,9 @@
 # Ignore history file
 .claude/history.jsonl
 
+# Ignore Claude MCP state
+.claude/mcp.json
+
 # Ignore plugin .git directories (can be large)
 .claude/plugins/marketplaces/**/.git/
 
