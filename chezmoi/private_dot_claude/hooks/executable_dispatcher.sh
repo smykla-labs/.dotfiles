@@ -274,6 +274,21 @@ if [[ "$TOOL_NAME" =~ ^(Write|Edit|MultiEdit)$ ]]; then
             exit "$EXIT_CODE"
             ;;
         *)
+            # Check if it's a GitHub Actions workflow file
+            if [[ "$FILE_PATH" =~ \.github/workflows/.*\.(yml|yaml)$ ]]; then
+                # Validate GitHub Actions workflows before writing
+                set +e
+                CLAUDE_FILE_PATH="$FILE_PATH" CLAUDE_TOOL_INPUT="$JSON_INPUT" "$HOOKS_DIR/validate-github-workflow.sh"
+                EXIT_CODE=$?
+                set -e
+                EVENT_RESULT=$( [[ $EXIT_CODE -eq 0 ]] && echo "approved" || echo "rejected" )
+                EVENT_VALIDATOR="validate-github-workflow.sh"
+                EVENT_EXIT_CODE="$EXIT_CODE"
+                log_event
+                exit "$EXIT_CODE"
+            fi
+
+            # No validator for this file type
             EVENT_RESULT="approved"
             EVENT_VALIDATOR="none"
             log_event
