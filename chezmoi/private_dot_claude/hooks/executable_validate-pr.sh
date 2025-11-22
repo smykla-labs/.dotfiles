@@ -57,11 +57,21 @@ fi
 
 # Body extraction is complex with newlines, check for presence
 if echo "$GH_COMMAND" | grep -q -E '\-\-body'; then
-    # Extract body content (simplified - may not handle all edge cases)
-    PR_BODY=$(echo "$GH_COMMAND" | sed -n 's/.*--body *"\(.*\)".*/\1/p' | head -1)
-    if [[ -z "$PR_BODY" ]]; then
-        PR_BODY=$(echo "$GH_COMMAND" | sed -n "s/.*--body *'\(.*\)'.*/\1/p" | head -1)
+    # Try to extract heredoc content first (e.g., --body "$(cat <<'EOF' ... EOF)")
+    if echo "$GH_COMMAND" | grep -q "<<'EOF'"; then
+        # Extract content between <<'EOF' and EOF)
+        PR_BODY=$(echo "$GH_COMMAND" | sed -n "/<<'EOF'/,/^EOF$/p" | sed "1d;\$d")
+    elif echo "$GH_COMMAND" | grep -q '<<EOF'; then
+        # Extract content between <<EOF and EOF)
+        PR_BODY=$(echo "$GH_COMMAND" | sed -n "/<<EOF/,/^EOF$/p" | sed "1d;\$d")
+    else
+        # Extract body content (simplified - may not handle all edge cases)
+        PR_BODY=$(echo "$GH_COMMAND" | sed -n 's/.*--body *"\(.*\)".*/\1/p' | head -1)
+        if [[ -z "$PR_BODY" ]]; then
+            PR_BODY=$(echo "$GH_COMMAND" | sed -n "s/.*--body *'\(.*\)'.*/\1/p" | head -1)
+        fi
     fi
+
     # If still empty, at least mark that --body flag was present
     if [[ -z "$PR_BODY" ]] && echo "$GH_COMMAND" | grep -q '\-\-body'; then
         PR_BODY="<body-present-but-extraction-failed>"
@@ -214,35 +224,42 @@ if [[ -n "$PR_BODY" ]] && [[ -n "$PR_TITLE" ]]; then
     fi
 fi
 
+# Validate markdown formatting with markdownlint if body is available
+# Do this before error reporting so markdown errors are included
+if [[ -n "$PR_BODY" ]] && [[ "$PR_BODY" != "<body-present-but-extraction-failed>" ]]; then
+    # Run markdownlint on PR body via stdin
+    # MD013 (line length) is already disabled in .markdownlint.json
+    if command -v markdownlint &> /dev/null; then
+        MD_OUTPUT=$(echo "$PR_BODY" | markdownlint --stdin 2>&1) || true
+        if [[ -n "$MD_OUTPUT" ]]; then
+            # Parse markdownlint output and add to errors
+            while IFS= read -r md_line; do
+                # markdownlint output format: stdin:line[:column] MD### description
+                if [[ "$md_line" =~ MD[0-9]+ ]]; then
+                    # Remove 'stdin:' prefix for cleaner output
+                    md_line="${md_line#stdin:}"
+                    ERRORS+=("❌ Markdown: $md_line")
+                fi
+            done <<< "$MD_OUTPUT"
+        fi
+    fi
+fi
+
 # Report errors and warnings
 if [[ ${#ERRORS[@]} -gt 0 ]]; then
     echo "🚫 PR validation failed:" >&2
     echo "" >&2
     printf '%s\n' "${ERRORS[@]}" >&2
-    
+
     if [[ ${#WARNINGS[@]} -gt 0 ]]; then
         echo "" >&2
         echo "Warnings:" >&2
         printf '%s\n' "${WARNINGS[@]}" >&2
     fi
-    
+
     echo "" >&2
     echo "📝 PR title: $PR_TITLE" >&2
     exit 2
-fi
-
-# Validate markdown formatting if body is available
-if [[ -n "$PR_BODY" ]] && [[ "$PR_BODY" != "<body-present-but-extraction-failed>" ]]; then
-    MD_CHECK=$(/Users/bart.smykla@konghq.com/.claude/hooks/validate-markdown.sh <<< "$PR_BODY" 2>&1) || true
-    if [[ -n "$MD_CHECK" ]]; then
-        # Add markdown warnings to existing warnings
-        if [[ ${#WARNINGS[@]} -eq 0 ]]; then
-            echo "$MD_CHECK" >&2
-        else
-            # Markdown check output already printed via stderr
-            :
-        fi
-    fi
 fi
 
 if [[ ${#WARNINGS[@]} -gt 0 ]]; then

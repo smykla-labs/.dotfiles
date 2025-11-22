@@ -354,7 +354,7 @@ if [[ "$TOOL_NAME" = "Bash" && -n "$COMMAND" ]]; then
             exit "$EXIT_CODE"
             ;;
 
-        gh\ pr\ create*)
+        gh\ pr\ create*|gh\ pr\ edit*)
             set +e
             CLAUDE_GIT_COMMAND="$COMMAND" "$HOOKS_DIR/validate-pr.sh"
             EXIT_CODE=$?
