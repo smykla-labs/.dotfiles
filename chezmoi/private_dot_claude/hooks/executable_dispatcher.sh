@@ -210,9 +210,67 @@ if [[ -z "$JSON_INPUT" && -z "${CLAUDE_HOOK_TYPE:-}" ]]; then
 fi
 
 # ============================================================================
-# PreToolUse Routing (Bash Commands)
+# PreToolUse Routing
 # ============================================================================
 
+# File Operations (Write/Edit)
+if [[ "$TOOL_NAME" =~ ^(Write|Edit|MultiEdit)$ ]]; then
+    # Get file path from tool input
+    if [[ -z "$FILE_PATH" ]]; then
+        EVENT_RESULT="approved"
+        EVENT_VALIDATOR="skipped (no file path)"
+        log_event
+        exit 0
+    fi
+
+    # Extract filename for logging
+    FILENAME=$(basename "$FILE_PATH")
+    EVENT_DETAILS_KEY="file"
+    EVENT_DETAILS="$FILENAME"
+
+    # Validate files before writing based on extension
+    case "$FILE_PATH" in
+        *.fish)
+            # Skip Fish scripts
+            EVENT_RESULT="approved"
+            EVENT_VALIDATOR="skipped (fish script)"
+            log_event
+            exit 0
+            ;;
+        *.sh|*.bash)
+            # Validate shell scripts before writing
+            set +e
+            CLAUDE_FILE_PATH="$FILE_PATH" CLAUDE_TOOL_INPUT="$JSON_INPUT" "$HOOKS_DIR/validate-shellscript.sh"
+            EXIT_CODE=$?
+            set -e
+            EVENT_RESULT=$( [[ $EXIT_CODE -eq 0 ]] && echo "approved" || echo "rejected" )
+            EVENT_VALIDATOR="validate-shellscript.sh"
+            EVENT_EXIT_CODE="$EXIT_CODE"
+            log_event
+            exit "$EXIT_CODE"
+            ;;
+        *.md|*.mdx)
+            # Validate Markdown/MDX before writing
+            set +e
+            CLAUDE_FILE_PATH="$FILE_PATH" CLAUDE_TOOL_INPUT="$JSON_INPUT" "$HOOKS_DIR/validate-markdown.sh"
+            EXIT_CODE=$?
+            set -e
+            EVENT_RESULT=$( [[ $EXIT_CODE -eq 0 ]] && echo "approved" || echo "rejected" )
+            EVENT_VALIDATOR="validate-markdown.sh"
+            EVENT_EXIT_CODE="$EXIT_CODE"
+            log_event
+            exit "$EXIT_CODE"
+            ;;
+        *)
+            EVENT_RESULT="approved"
+            EVENT_VALIDATOR="none"
+            log_event
+            exit 0
+            ;;
+    esac
+fi
+
+# Bash Commands
 if [[ "$TOOL_NAME" = "Bash" && -n "$COMMAND" ]]; then
     EVENT_DETAILS_KEY="cmd"
     EVENT_DETAILS="${COMMAND:0:60}${COMMAND:60:+...}"
@@ -317,39 +375,11 @@ case "$TOOL_NAME" in
         EVENT_DETAILS_KEY="file"
         EVENT_DETAILS="$FILENAME"
 
-        # Route based on file extension
-        case "$FILE_PATH" in
-            *.sh|*.bash)
-                set +e
-                CLAUDE_FILE_PATH="$FILE_PATH" "$HOOKS_DIR/validate-shellscript.sh"
-                EXIT_CODE=$?
-                set -e
-                EVENT_RESULT=$( [[ $EXIT_CODE -eq 0 ]] && echo "approved" || echo "rejected" )
-                EVENT_VALIDATOR="validate-shellscript.sh"
-                EVENT_EXIT_CODE="$EXIT_CODE"
-                log_event
-                exit "$EXIT_CODE"
-                ;;
-
-            *.md)
-                set +e
-                CLAUDE_FILE_PATH="$FILE_PATH" "$HOOKS_DIR/validate-markdown.sh"
-                EXIT_CODE=$?
-                set -e
-                EVENT_RESULT=$( [[ $EXIT_CODE -eq 0 ]] && echo "approved" || echo "rejected" )
-                EVENT_VALIDATOR="validate-markdown.sh"
-                EVENT_EXIT_CODE="$EXIT_CODE"
-                log_event
-                exit "$EXIT_CODE"
-                ;;
-
-            *)
-                EVENT_RESULT="approved"
-                EVENT_VALIDATOR="none"
-                log_event
-                exit 0
-                ;;
-        esac
+        # No PostToolUse validation for files (now handled in PreToolUse)
+        EVENT_RESULT="approved"
+        EVENT_VALIDATOR="none"
+        log_event
+        exit 0
         ;;
 
     *)

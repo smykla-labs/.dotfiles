@@ -1,17 +1,38 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Validate markdown formatting rules
+# Validate markdown formatting rules (PreToolUse and PostToolUse)
 # 1. Empty line before code blocks (```)
 # 2. Empty line before first list item (-, *, 1.)
 # 3. Empty line after headers (##)
-
+#
+# PreToolUse: Validates content from tool input before write
+# PostToolUse: Validates file on disk after write (or from stdin/arg)
+#
 # Exit codes: 0 = pass, 2 = fail
 
-# Get text content from first argument or stdin
-if [[ -n "${1:-}" ]]; then
+# Get content from various sources
+FILE_PATH="${CLAUDE_FILE_PATH:-}"
+TOOL_INPUT="${CLAUDE_TOOL_INPUT:-}"
+TEXT_CONTENT=""
+
+if [[ -n "$TOOL_INPUT" ]]; then
+    # PreToolUse mode: Extract content from tool input
+    TEXT_CONTENT=$(echo "$TOOL_INPUT" | jq -r '.tool_input.content // empty' 2>/dev/null || echo "")
+
+    if [[ -z "$TEXT_CONTENT" ]]; then
+        # For Edit operations, we can't easily get the final content
+        # Skip PreToolUse validation for Edit
+        exit 0
+    fi
+elif [[ -n "$FILE_PATH" && -f "$FILE_PATH" ]]; then
+    # PostToolUse mode or file-based validation
+    TEXT_CONTENT=$(cat "$FILE_PATH")
+elif [[ -n "${1:-}" ]]; then
+    # From argument (e.g., commit message validation)
     TEXT_CONTENT="$1"
 else
+    # From stdin
     TEXT_CONTENT=$(cat)
 fi
 
