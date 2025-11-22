@@ -33,6 +33,31 @@ if [[ -n "$GIT_COMMAND" ]]; then
         ERRORS+=("   Current command: '$GIT_COMMAND'")
         ERRORS+=("   Expected: git commit -sS -m \"message\"")
     fi
+
+    # Check for staging area (skip for --amend or --allow-empty)
+    if ! echo "$GIT_COMMAND" | grep -qE '\-\-amend|\-\-allow-empty'; then
+        # Check if -a, -A, or --all flags are present
+        if ! echo "$GIT_COMMAND" | grep -qE '\-[a-zA-Z]*a[a-zA-Z]*|\-[a-zA-Z]*A[a-zA-Z]*|\-\-all'; then
+            # No -a/-A/--all flag, check if staging area has files
+            STAGED_FILES=$(git diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')
+            if [[ "$STAGED_FILES" -eq 0 ]]; then
+                # No files staged, collect status info
+                MODIFIED_FILES=$(git diff --name-only 2>/dev/null | wc -l | tr -d ' ')
+                UNTRACKED_FILES=$(git ls-files --others --exclude-standard 2>/dev/null | wc -l | tr -d ' ')
+
+                ERRORS+=("❌ No files staged for commit and no -a/-A flag specified")
+                ERRORS+=("")
+                ERRORS+=("   Current status:")
+                ERRORS+=("     Modified files (not staged): $MODIFIED_FILES")
+                ERRORS+=("     Untracked files: $UNTRACKED_FILES")
+                ERRORS+=("     Staged files: 0")
+                ERRORS+=("")
+                ERRORS+=("   Did you forget to:")
+                ERRORS+=("     • Stage files? Run 'git add <files>' or 'git add .'")
+                ERRORS+=("     • Use -a flag? Run 'git commit -a' to commit all modified files")
+            fi
+        fi
+    fi
 fi
 
 # Check for Claude AI footer
