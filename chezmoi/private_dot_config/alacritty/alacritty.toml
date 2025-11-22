@@ -20,6 +20,11 @@ args = ["--command", "tmuxp load dev"]
 startup_mode = "Fullscreen"
 option_as_alt = "Both"
 
+[bell]
+animation = "Linear"
+duration = 0
+color = "#000000"
+
 # Make Shift+Enter work for Claude Code running in tmux panes
 [[keyboard.bindings]]
 key = "Return"
