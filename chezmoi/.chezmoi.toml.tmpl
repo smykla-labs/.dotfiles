@@ -43,11 +43,11 @@ sourceDir = {{ .chezmoi.sourceDir | quote }}
 
 # Diff configuration
 [diff]
-    # Use external diff tool for better readability
-    command = "vim"
-    args = ["-d", "{{ "{{ .Destination }}" }}", "{{ "{{ .Target }}" }}"]
-    # Pager for viewing diffs
-    pager = "less"
+    # Use delta for syntax-highlighted, side-by-side diffs
+    command = "delta"
+    args = ["{{ "{{ .Destination }}" }}", "{{ "{{ .Target }}" }}"]
+    # Delta has built-in paging
+    pager = ""
 
 # Age encryption configuration
 [age]
