@@ -1,3 +1,8 @@
+# Source nix-darwin config (Homebrew fish uses different sysconf dir)
+if test -f /etc/fish/config.fish
+    source /etc/fish/config.fish
+end
+
 # Disable initial welcome message
   set --global fish_greeting
 
