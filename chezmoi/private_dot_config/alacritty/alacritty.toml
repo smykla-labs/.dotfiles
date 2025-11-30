@@ -1,6 +1,7 @@
 [debug]
 log_level = "Debug"
 print_events = false
+render_timer = false
 
 [font]
 size = 20.0
@@ -19,6 +20,7 @@ args = ["--command", "tmuxp load dev"]
 [window]
 startup_mode = "Fullscreen"
 option_as_alt = "Both"
+decorations = "buttonless"
 
 [bell]
 animation = "Linear"
