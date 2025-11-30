@@ -87,7 +87,115 @@
                 # "zap" = remove + delete all data (DANGEROUS)
                 cleanup = "none";
               };
-              casks = [ ];
+
+              # Third-party taps
+              taps = [
+                "bartsmykla/af"
+                "bufbuild/buf"
+                "chipmk/tap"
+                "speakeasy-api/tap"
+                "aquaproj/aqua"
+                "aquasecurity/trivy"
+                "cyclonedx/cyclonedx"
+                "derailed/popeye"
+                "hashicorp/tap"
+                "mutagen-io/mutagen"
+                "helm/tap"
+                "grafana/grafana"
+                "pamburus/tap"
+                "homebrew/services"
+              ];
+
+              # Formulas not available in nixpkgs
+              brews = [
+                "bartsmykla/af/af"        # Personal CLI tool
+                "chipmk/tap/docker-mac-net-connect" # Docker networking
+                "cyclonedx/cyclonedx/cyclonedx-cli" # CycloneDX SBOM
+                "derailed/popeye/popeye"  # Kubernetes cluster linter
+                "mutagen-io/mutagen/mutagen" # File sync
+                "pamburus/tap/hl"         # JSON log viewer
+                "lnav"                    # Log viewer (HEAD build)
+                "kumactl"                 # Kuma service mesh CLI
+                "swiftlint"               # Swift linter
+                "vale"                    # Prose linter
+                "cfn-lint"                # CloudFormation linter
+                "commitlint"              # Commit message linter
+                "check-jsonschema"        # JSON Schema validator
+                "aqua"                    # CLI version manager
+                "chart-releaser"          # Helm charts releaser
+                "vexctl"                  # VEX metadata tool
+                "muffet"                  # Website link checker
+                "speakeasy-api/tap/speakeasy" # API client generation
+                "toxiproxy"               # TCP proxy for chaos
+                "kubeshark"               # Kubernetes network analyzer
+                "jump"                    # Directory bookmarking
+              ];
+
+              # GUI Applications (casks)
+              casks = [
+                # Essential
+                "1password-cli"
+                "alfred"
+                "rectangle"
+
+                # Terminals
+                "alacritty"
+                "iterm2"
+                "kitty"
+
+                # Browsers
+                "brave-browser"
+                "firefox@developer-edition"
+                "opera"
+
+                # Development
+                "cursor"
+                "visual-studio-code"
+                "jetbrains-toolbox"
+                "insomnia"
+
+                # AI Tools
+                "chatgpt"
+                "claude"
+
+                # Container & Kubernetes
+                "orbstack"
+                "rancher"
+
+                # Cloud
+                "google-cloud-sdk"
+
+                # Communication
+                "discord"
+                "signal"
+
+                # Utilities
+                "bartender"
+                "caffeine"
+                "hiddenbar"
+                "raycast"
+                "send-to-kindle"
+
+                # Productivity
+                "obsidian"
+                "omnigraffle"
+
+                # Security & Networking
+                "gpg-suite"
+                "ngrok"
+                "wireshark"
+
+                # Gaming/Peripherals
+                "steelseries-gg"
+
+                # Infrastructure
+                "hashicorp-vagrant"
+
+                # Fonts
+                "font-fira-code"
+                "font-fira-code-nerd-font"
+                "font-fira-mono-nerd-font"
+              ];
             };
 
             # Set hostname to match flake configuration name
@@ -110,6 +218,7 @@
                   sops-nix.homeManagerModules.sops
                   ./modules/home/alacritty.nix
                   ./modules/home/fish.nix
+                  ./modules/home/packages.nix
                   ./modules/home/sops.nix
                   ./modules/home/starship.nix
                   ./modules/home/tmux.nix
@@ -119,10 +228,6 @@
                 home.username = username;
                 home.homeDirectory = lib.mkForce "/Users/bart.smykla@konghq.com";
                 home.stateVersion = "24.05";
-
-                home.packages = with pkgs; [
-                  bat eza fd fzf ripgrep jq
-                ];
 
                 programs.home-manager.enable = true;
 
