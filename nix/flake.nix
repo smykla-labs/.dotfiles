@@ -219,6 +219,7 @@
                   ./modules/home/alacritty.nix
                   ./modules/home/atuin.nix
                   ./modules/home/direnv.nix
+                  ./modules/home/exercism.nix
                   ./modules/home/fish.nix
                   ./modules/home/k9s.nix
                   ./modules/home/packages.nix
