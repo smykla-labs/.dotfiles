@@ -13,9 +13,14 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, ... }:
+  outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, sops-nix, ... }:
     let
       system = "aarch64-darwin";
       hostname = "bartsmykla";
@@ -102,8 +107,10 @@
               backupFileExtension = "hm-backup";
               users.${username} = { pkgs, lib, config, ... }: {
                 imports = [
+                  sops-nix.homeManagerModules.sops
                   ./modules/home/alacritty.nix
                   ./modules/home/fish.nix
+                  ./modules/home/sops.nix
                   ./modules/home/starship.nix
                   ./modules/home/tmux.nix
                   ./modules/home/vim.nix

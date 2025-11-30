@@ -67,3 +67,7 @@
 
 # Alacritty config (managed by home-manager programs.alacritty)
 .config/alacritty
+
+# Fish shell config (managed by home-manager programs.fish)
+# Abbreviations sourced from sops-nix secret at runtime
+.config/fish
