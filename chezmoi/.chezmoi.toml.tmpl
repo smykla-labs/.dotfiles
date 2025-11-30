@@ -59,7 +59,12 @@ sourceDir = {{ .chezmoi.sourceDir | quote }}
         "age1h3cwe6tflreqda3dqkv2qucgzswkwp8w39nqt7089tw6kmpfn9sqmln47m"
     ]
 
-# Merge configuration
+# Merge configuration (uses GoLand for 3-way merge GUI)
+# GoLand merge syntax: goland merge <local> <remote> [base] <merged>
+# chezmoi expects .Destination to be modified, so it must be the output file
+# - Source: chezmoi source directory version (local)
+# - Target: what chezmoi wants to apply (remote)
+# - Destination: current state in home directory (output - will be modified)
 [merge]
-    command = "vimdiff"
-    args = ["{{ "{{ .Destination }}" }}", "{{ "{{ .Source }}" }}", "{{ "{{ .Target }}" }}"]
+    command = "goland-merge"
+    args = ["{{ "{{ .Source }}" }}", "{{ "{{ .Target }}" }}", "{{ "{{ .Destination }}" }}"]
