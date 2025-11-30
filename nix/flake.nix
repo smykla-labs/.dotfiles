@@ -37,7 +37,7 @@
             nixpkgs.config.allowUnfree = true;
             nixpkgs.hostPlatform = system;
 
-            environment.systemPackages = with pkgs; [ vim git ];
+            environment.systemPackages = with pkgs; [ git ];
 
             # Enable fish shell system-wide with nix-darwin paths
             programs.fish = {
@@ -85,6 +85,11 @@
               casks = [ ];
             };
 
+            # Set hostname to match flake configuration name
+            networking.hostName = hostname;
+            networking.computerName = hostname;
+            networking.localHostName = hostname;
+
             system.stateVersion = 5;
           })
 
@@ -100,6 +105,7 @@
                   ./modules/home/fish.nix
                   ./modules/home/starship.nix
                   ./modules/home/tmux.nix
+                  ./modules/home/vim.nix
                 ];
 
                 home.username = username;
