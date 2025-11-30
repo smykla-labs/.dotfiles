@@ -53,6 +53,7 @@
   source "$HOMEBREW_PREFIX/share/google-cloud-sdk/path.fish.inc"
 
 # install direnv hook (https://direnv.net/docs/hook.html#fish)
+  set -gx DIRENV_LOG_FORMAT
   direnv hook fish | source
   set --global direnv_fish_mode eval_on_arrow
 
@@ -75,3 +76,6 @@
 # teleport
   # teleport is not working well with 1password when $SSH_AUTH_SOCK is specified
   set --global --export TELEPORT_USE_LOCAL_SSH_AGENT false
+
+# opencode
+fish_add_path /Users/bart.smykla@konghq.com/.opencode/bin
