@@ -217,7 +217,10 @@
                 imports = [
                   sops-nix.homeManagerModules.sops
                   ./modules/home/alacritty.nix
+                  ./modules/home/atuin.nix
+                  ./modules/home/direnv.nix
                   ./modules/home/fish.nix
+                  ./modules/home/k9s.nix
                   ./modules/home/packages.nix
                   ./modules/home/sops.nix
                   ./modules/home/starship.nix

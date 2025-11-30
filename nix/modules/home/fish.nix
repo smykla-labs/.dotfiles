@@ -61,8 +61,8 @@
         --variables=\cv \
         --history=
 
-      # Atuin shell history
-      atuin init fish --disable-up-arrow | source
+      # Note: Atuin shell history handled by programs.atuin in atuin.nix
+      # with enableFishIntegration = true
 
       # ansible config
       set --global --export ANSIBLE_CONFIG "$DOTFILES_PATH/ansible/ansible.cfg"
@@ -73,9 +73,8 @@
         source "$HOMEBREW_PREFIX/share/google-cloud-sdk/path.fish.inc"
       end
 
-      # direnv hook
-      set -gx DIRENV_LOG_FORMAT
-      direnv hook fish | source
+      # Note: Direnv hook handled by programs.direnv in direnv.nix
+      # Manual hook disabled since direnv.nix handles integration
       set --global direnv_fish_mode eval_on_arrow
 
       # Note: starship prompt is handled by home-manager programs.starship
@@ -395,12 +394,8 @@
   };
 
   # Install related packages
+  # Note: atuin and direnv are handled by their own modules (atuin.nix, direnv.nix)
   home.packages = with pkgs; [
-    # Shell utilities
-    atuin      # Shell history sync
-    direnv     # Per-directory environment
-    jump       # Autojump alternative
-
     # fzf integration (used by fzf.fish plugin)
     fzf
   ];

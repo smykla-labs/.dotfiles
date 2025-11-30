@@ -71,3 +71,13 @@
 # Fish shell config (managed by home-manager programs.fish)
 # Abbreviations sourced from sops-nix secret at runtime
 .config/fish
+
+# Atuin config (managed by home-manager programs.atuin)
+.config/atuin
+
+# Direnv config (managed by home-manager programs.direnv)
+.config/direnv
+
+# K9s config (managed by home-manager + sops-nix)
+# Note: k9s/config.yaml is a sops secret, aliases/plugins/views are declarative
+.config/k9s
