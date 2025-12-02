@@ -11,3 +11,5 @@ tmp
 .tmux/plugins/tmux-resurrect
 .tmux/plugins/tmux-sensible
 .task
+result
+.claude
