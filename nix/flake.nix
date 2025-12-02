@@ -18,9 +18,14 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    af = {
+      url = "github:bartsmykla/af";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, sops-nix, ... }:
+  outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, sops-nix, af, ... }:
     let
       system = "aarch64-darwin";
       hostname = "bartsmykla";
@@ -90,7 +95,6 @@
 
               # Third-party taps
               taps = [
-                "bartsmykla/af"
                 "bufbuild/buf"
                 "chipmk/tap"
                 "speakeasy-api/tap"
@@ -108,7 +112,6 @@
 
               # Formulas not available in nixpkgs
               brews = [
-                "bartsmykla/af/af"        # Personal CLI tool
                 "chipmk/tap/docker-mac-net-connect" # Docker networking
                 "cyclonedx/cyclonedx/cyclonedx-cli" # CycloneDX SBOM
                 "derailed/popeye/popeye"  # Kubernetes cluster linter
@@ -248,6 +251,9 @@
                   settings.user.name = "Bart Smykla";
                   settings.user.email = "bartek@smykla.com";
                 };
+
+                # Add af package from flake input
+                home.packages = [ af.packages.${system}.default ];
               };
             };
           })
@@ -277,6 +283,8 @@
                 home.username = userName;
                 home.homeDirectory = userHome;
                 home.stateVersion = "24.05";
+                # Add af package from flake input
+                home.packages = [ af.packages.${system}.default ];
               }
               sops-nix.homeManagerModules.sops
               ./modules/home/alacritty.nix
