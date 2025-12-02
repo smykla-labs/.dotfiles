@@ -20,217 +20,179 @@
 
   # Configure gocheat with broot shortcuts
   # macOS uses ~/Library/Application Support instead of ~/.config
+  # Gocheat format: { items: [...], styles: {...} }
+  # Each item: { tag: "...", title: "description : keybind" }
   home.file."Library/Application Support/gocheat/config.json".text = builtins.toJSON {
-    description = "Broot Keyboard Shortcuts - Focus on NEW shortcuts";
-    entries = [
+    items = [
       # Navigation - NEW Shortcuts
       {
         tag = "nav-new";
-        keybind = "Ctrl-j / Ctrl-k";
-        description = "Vim-style line down/up [NEW]";
+        title = "Vim-style line down/up [NEW] : Ctrl-j / Ctrl-k";
       }
       {
         tag = "nav-new";
-        keybind = "Ctrl-d / Ctrl-u";
-        description = "Vim-style page down/up [NEW]";
+        title = "Vim-style page down/up [NEW] : Ctrl-d / Ctrl-u";
       }
       {
         tag = "nav-new";
-        keybind = "Ctrl-p";
-        description = "Go to parent directory [NEW]";
+        title = "Go to parent directory [NEW] : Ctrl-p";
       }
       {
         tag = "nav-new";
-        keybind = "Ctrl-home";
-        description = "Go to home directory [NEW]";
+        title = "Go to home directory [NEW] : Ctrl-home";
       }
 
       # Navigation - Classic
       {
         tag = "nav";
-        keybind = "↑ / ↓";
-        description = "Navigate up/down tree";
+        title = "Navigate up/down tree : ↑ / ↓";
       }
       {
         tag = "nav";
-        keybind = "Enter";
-        description = "Open directory or file";
+        title = "Open directory or file : Enter";
       }
       {
         tag = "nav";
-        keybind = "Esc";
-        description = "Back/cancel action";
+        title = "Back/cancel action : Esc";
       }
       {
         tag = "nav";
-        keybind = "Tab";
-        description = "Cycle through matches";
+        title = "Cycle through matches : Tab";
       }
 
       # File Operations
       {
         tag = "files";
-        keybind = "e or Ctrl-e";
-        description = "Edit file in $EDITOR";
+        title = "Edit file in $EDITOR : e or Ctrl-e";
       }
       {
         tag = "files-new";
-        keybind = ":md <name>";
-        description = "Create new directory [NEW]";
+        title = "Create new directory [NEW] : :md <name>";
       }
       {
         tag = "files";
-        keybind = ":create <path>";
-        description = "Create and edit new file";
+        title = "Create and edit new file : :create <path>";
       }
       {
         tag = "files";
-        keybind = "Ctrl-b";
-        description = "Backup file with version";
+        title = "Backup file with version : Ctrl-b";
       }
       {
         tag = "files";
-        keybind = ":rm";
-        description = "Delete file/directory";
+        title = "Delete file/directory : :rm";
       }
       {
         tag = "files";
-        keybind = ":cp <dest>";
-        description = "Copy file/directory";
+        title = "Copy file/directory : :cp <dest>";
       }
       {
         tag = "files";
-        keybind = ":mv <dest>";
-        description = "Move/rename file";
+        title = "Move/rename file : :mv <dest>";
       }
 
       # Panel Operations - NEW Norton Commander Style
       {
         tag = "panel-new";
-        keybind = "F5";
-        description = "Copy to other panel (Norton) [NEW]";
+        title = "Copy to other panel (Norton) [NEW] : F5";
       }
       {
         tag = "panel-new";
-        keybind = "F6";
-        description = "Move to other panel (Norton) [NEW]";
+        title = "Move to other panel (Norton) [NEW] : F6";
       }
       {
         tag = "panel";
-        keybind = "Ctrl-→";
-        description = "Open panel/preview";
+        title = "Open panel/preview : Ctrl-→";
       }
       {
         tag = "panel";
-        keybind = "Ctrl-←";
-        description = "Close panel/go back";
+        title = "Close panel/go back : Ctrl-←";
       }
 
       # Git Operations - NEW Shortcuts
       {
         tag = "git-new";
-        keybind = "gs";
-        description = "Git status interactive [NEW]";
+        title = "Git status interactive [NEW] : gs";
       }
       {
         tag = "git-new";
-        keybind = "gtr";
-        description = "Go to git root [NEW]";
+        title = "Go to git root [NEW] : gtr";
       }
       {
         tag = "git-new";
-        keybind = "Alt-g";
-        description = "Toggle git status filter [NEW]";
+        title = "Toggle git status filter [NEW] : Alt-g";
       }
       {
         tag = "git";
-        keybind = "gd";
-        description = "Git diff current file";
+        title = "Git diff current file : gd";
       }
       {
         tag = "git";
-        keybind = "Ctrl-g";
-        description = "Stage file (built-in)";
+        title = "Stage file (built-in) : Ctrl-g";
       }
 
       # Search & Filter
       {
         tag = "search";
-        keybind = "<pattern>";
-        description = "Fuzzy search (just type!)";
+        title = "Fuzzy search (just type!) : <pattern>";
       }
       {
         tag = "search-new";
-        keybind = "Ctrl-s";
-        description = "Total search (large dirs) [NEW]";
+        title = "Total search (large dirs) [NEW] : Ctrl-s";
       }
       {
         tag = "search";
-        keybind = "/<pattern>";
-        description = "Regex search";
+        title = "Regex search : /<pattern>";
       }
       {
         tag = "search";
-        keybind = "c/<pattern>";
-        description = "Search file content";
+        title = "Search file content : c/<pattern>";
       }
 
       # Toggles
       {
         tag = "toggle";
-        keybind = "Alt-i";
-        description = "Toggle gitignored files";
+        title = "Toggle gitignored files : Alt-i";
       }
       {
         tag = "toggle";
-        keybind = "Alt-h";
-        description = "Toggle hidden files";
+        title = "Toggle hidden files : Alt-h";
       }
       {
         tag = "toggle";
-        keybind = ":toggle_sizes";
-        description = "Show/hide file sizes";
+        title = "Show/hide file sizes : :toggle_sizes";
       }
       {
         tag = "toggle";
-        keybind = ":toggle_perm";
-        description = "Show/hide permissions";
+        title = "Show/hide permissions : :toggle_perm";
       }
 
       # Miscellaneous
       {
         tag = "misc";
-        keybind = "?";
-        description = "Show help (MASTER KEY!)";
+        title = "Show help (MASTER KEY!) : ?";
       }
       {
         tag = "misc-new";
-        keybind = "r";
-        description = "Reveal in Finder (macOS) [NEW]";
+        title = "Reveal in Finder (macOS) [NEW] : r";
       }
       {
         tag = "misc";
-        keybind = "Ctrl-t";
-        description = "Launch terminal here";
+        title = "Launch terminal here : Ctrl-t";
       }
       {
         tag = "misc";
-        keybind = "Alt-Enter";
-        description = "CD to dir and exit";
+        title = "CD to dir and exit : Alt-Enter";
       }
       {
         tag = "misc";
-        keybind = "Ctrl-c";
-        description = "Exit broot";
+        title = "Exit broot : Ctrl-c";
       }
     ];
 
     # Catppuccin-inspired color scheme (dark blue theme)
     styles = {
-      description_color = "#82aaff";  # Light blue
-      keybind_color = "#c3e88d";      # Green
-      tag_color = "#ffcb6b";          # Yellow
-      border_color = "#717cb4";       # Purple-ish
+      accent = "#c3e88d";      # Green (keybinds)
+      subtext = "#82aaff";     # Light blue (descriptions)
     };
   };
 
