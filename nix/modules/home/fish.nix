@@ -79,38 +79,10 @@
 
       # Git push - NOTE: using af-based function below
       # p, pF, pf, pn, pnF, pnf defined with --function below
-
-      # Git push - origin-first (explicit)
-      po = "git-push-origin-first";
-      poF = "git-push-origin-first-force";
-      pof = "git-push-origin-first-force-with-lease";
-      pon = "git-push-origin-first-no-verify";
-      ponF = "git-push-origin-first-no-verify-force";
-      ponf = "git-push-origin-first-no-verify-force-with-lease";
-
-      # Git push - origin (no set-upstream)
-      pO = "git-push-origin";
-      pOF = "git-push-origin-force";
-      pOf = "git-push-origin-force-with-lease";
-      pOn = "git-push-origin-no-verify";
-      pOnF = "git-push-origin-no-verify-force";
-      pOnf = "git-push-origin-no-verify-force-with-lease";
-
-      # Git push - upstream-first
-      pu = "git-push-upstream-first";
-      puF = "git-push-upstream-first-force";
-      puf = "git-push-upstream-first-force-with-lease";
-      pun = "git-push-upstream-first-no-verify";
-      punF = "git-push-upstream-first-no-verify-force";
-      punf = "git-push-upstream-first-no-verify-force-with-lease";
-
-      # Git push - upstream (no set-upstream)
-      pU = "git-push-upstream";
-      pUF = "git-push-upstream-force";
-      pUf = "git-push-upstream-force-with-lease";
-      pUn = "git-push-upstream-no-verify";
-      pUnF = "git-push-upstream-no-verify-force";
-      pUnf = "git-push-upstream-no-verify-force-with-lease";
+      # po, poF, pof, pon, ponF, ponf defined with --function below
+      # pO, pOF, pOf, pOn, pOnF, pOnf defined with --function below
+      # pu, puF, puf, pun, punF, punf defined with --function below
+      # pU, pUF, pUf, pUn, pUnF, pUnf defined with --function below
     };
 
     # Fisher plugins managed via Nix
@@ -243,12 +215,36 @@
       # Set up af-based abbreviations with --function flag
       # These abbreviations call functions that execute 'af shortcuts abbreviations <name>'
       # which returns the expanded command string
-      abbr --erase gcm gcmf gcmff p pF pf pn pnF pnf d 2>/dev/null
+      abbr --erase gcm gcmf gcmff p pF pf pn pnF pnf d po poF pof pon ponF ponf pO pOF pOf pOn pOnF pOnf pu puF puf pun punF punf pU pUF pUf pUn pUnF pUnf 2>/dev/null
       abbr --add --function __abbr_af_gcm gcm
       abbr --add --function __abbr_af_gcmf gcmf
       abbr --add --function __abbr_af_gcmff gcmff
       abbr --add --function __abbr_af_gp p
       abbr --add --function __abbr_af_gd d
+      abbr --add --function __abbr_af_po_origin_first po
+      abbr --add --function __abbr_af_pof_origin_first_force poF
+      abbr --add --function __abbr_af_pof_origin_first_force_lease pof
+      abbr --add --function __abbr_af_pon_origin_first_noverify pon
+      abbr --add --function __abbr_af_ponf_origin_first_noverify_force ponF
+      abbr --add --function __abbr_af_ponf_origin_first_noverify_force_lease ponf
+      abbr --add --function __abbr_af_po_origin pO
+      abbr --add --function __abbr_af_pof_origin_force pOF
+      abbr --add --function __abbr_af_pof_origin_force_lease pOf
+      abbr --add --function __abbr_af_pon_origin_noverify pOn
+      abbr --add --function __abbr_af_ponf_origin_noverify_force pOnF
+      abbr --add --function __abbr_af_ponf_origin_noverify_force_lease pOnf
+      abbr --add --function __abbr_af_pu_upstream_first pu
+      abbr --add --function __abbr_af_puf_upstream_first_force puF
+      abbr --add --function __abbr_af_puf_upstream_first_force_lease puf
+      abbr --add --function __abbr_af_pun_upstream_first_noverify pun
+      abbr --add --function __abbr_af_punf_upstream_first_noverify_force punF
+      abbr --add --function __abbr_af_punf_upstream_first_noverify_force_lease punf
+      abbr --add --function __abbr_af_pu_upstream pU
+      abbr --add --function __abbr_af_puf_upstream_force pUF
+      abbr --add --function __abbr_af_puf_upstream_force_lease pUf
+      abbr --add --function __abbr_af_pun_upstream_noverify pUn
+      abbr --add --function __abbr_af_punf_upstream_noverify_force pUnF
+      abbr --add --function __abbr_af_punf_upstream_noverify_force_lease pUnf
 
       # Source secrets from SECRETS_PATH directory
       for secret in $SECRETS_PATH/*
@@ -289,6 +285,130 @@
       __abbr_af_gd = {
         description = "AF abbreviation expander for gd (git diff)";
         body = "af shortcuts abbreviations gd 2>/dev/null || echo git-diff-head-pbcopy";
+      };
+
+      # Git push abbreviation expanders - origin-first (explicit)
+      __abbr_af_po_origin_first = {
+        description = "AF abbreviation expander for po (git push origin-first)";
+        body = "af shortcuts abbreviations gp --remote origin-first";
+      };
+
+      __abbr_af_pof_origin_first_force = {
+        description = "AF abbreviation expander for poF";
+        body = "af shortcuts abbreviations gp --remote origin-first --force";
+      };
+
+      __abbr_af_pof_origin_first_force_lease = {
+        description = "AF abbreviation expander for pof";
+        body = "af shortcuts abbreviations gp --remote origin-first --force-with-lease";
+      };
+
+      __abbr_af_pon_origin_first_noverify = {
+        description = "AF abbreviation expander for pon";
+        body = "af shortcuts abbreviations gp --remote origin-first --no-verify";
+      };
+
+      __abbr_af_ponf_origin_first_noverify_force = {
+        description = "AF abbreviation expander for ponF";
+        body = "af shortcuts abbreviations gp --remote origin-first --no-verify --force";
+      };
+
+      __abbr_af_ponf_origin_first_noverify_force_lease = {
+        description = "AF abbreviation expander for ponf";
+        body = "af shortcuts abbreviations gp --remote origin-first --no-verify --force-with-lease";
+      };
+
+      # Git push abbreviation expanders - origin (no set-upstream)
+      __abbr_af_po_origin = {
+        description = "AF abbreviation expander for pO (git push origin)";
+        body = "af shortcuts abbreviations gp --remote origin";
+      };
+
+      __abbr_af_pof_origin_force = {
+        description = "AF abbreviation expander for pOF";
+        body = "af shortcuts abbreviations gp --remote origin --force";
+      };
+
+      __abbr_af_pof_origin_force_lease = {
+        description = "AF abbreviation expander for pOf";
+        body = "af shortcuts abbreviations gp --remote origin --force-with-lease";
+      };
+
+      __abbr_af_pon_origin_noverify = {
+        description = "AF abbreviation expander for pOn";
+        body = "af shortcuts abbreviations gp --remote origin --no-verify";
+      };
+
+      __abbr_af_ponf_origin_noverify_force = {
+        description = "AF abbreviation expander for pOnF";
+        body = "af shortcuts abbreviations gp --remote origin --no-verify --force";
+      };
+
+      __abbr_af_ponf_origin_noverify_force_lease = {
+        description = "AF abbreviation expander for pOnf";
+        body = "af shortcuts abbreviations gp --remote origin --no-verify --force-with-lease";
+      };
+
+      # Git push abbreviation expanders - upstream-first
+      __abbr_af_pu_upstream_first = {
+        description = "AF abbreviation expander for pu (git push upstream-first)";
+        body = "af shortcuts abbreviations gp --remote upstream-first";
+      };
+
+      __abbr_af_puf_upstream_first_force = {
+        description = "AF abbreviation expander for puF";
+        body = "af shortcuts abbreviations gp --remote upstream-first --force";
+      };
+
+      __abbr_af_puf_upstream_first_force_lease = {
+        description = "AF abbreviation expander for puf";
+        body = "af shortcuts abbreviations gp --remote upstream-first --force-with-lease";
+      };
+
+      __abbr_af_pun_upstream_first_noverify = {
+        description = "AF abbreviation expander for pun";
+        body = "af shortcuts abbreviations gp --remote upstream-first --no-verify";
+      };
+
+      __abbr_af_punf_upstream_first_noverify_force = {
+        description = "AF abbreviation expander for punF";
+        body = "af shortcuts abbreviations gp --remote upstream-first --no-verify --force";
+      };
+
+      __abbr_af_punf_upstream_first_noverify_force_lease = {
+        description = "AF abbreviation expander for punf";
+        body = "af shortcuts abbreviations gp --remote upstream-first --no-verify --force-with-lease";
+      };
+
+      # Git push abbreviation expanders - upstream (no set-upstream)
+      __abbr_af_pu_upstream = {
+        description = "AF abbreviation expander for pU (git push upstream)";
+        body = "af shortcuts abbreviations gp --remote upstream";
+      };
+
+      __abbr_af_puf_upstream_force = {
+        description = "AF abbreviation expander for pUF";
+        body = "af shortcuts abbreviations gp --remote upstream --force";
+      };
+
+      __abbr_af_puf_upstream_force_lease = {
+        description = "AF abbreviation expander for pUf";
+        body = "af shortcuts abbreviations gp --remote upstream --force-with-lease";
+      };
+
+      __abbr_af_pun_upstream_noverify = {
+        description = "AF abbreviation expander for pUn";
+        body = "af shortcuts abbreviations gp --remote upstream --no-verify";
+      };
+
+      __abbr_af_punf_upstream_noverify_force = {
+        description = "AF abbreviation expander for pUnF";
+        body = "af shortcuts abbreviations gp --remote upstream --no-verify --force";
+      };
+
+      __abbr_af_punf_upstream_noverify_force_lease = {
+        description = "AF abbreviation expander for pUnf";
+        body = "af shortcuts abbreviations gp --remote upstream --no-verify --force-with-lease";
       };
 
       # Git utilities
