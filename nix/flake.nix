@@ -1,0 +1,136 @@
+{
+  description = "Nix configuration for smykla-labs dotfiles";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
+    nix-darwin = {
+      url = "github:LnL7/nix-darwin";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    af = {
+      url = "github:smykla-labs/af";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, sops-nix, af, ... }:
+    let
+      system = "aarch64-darwin";
+      hostname = "bartsmykla";
+      # Username with special characters needs careful handling
+      username = "bart.smykla@konghq.com";
+
+      # Shared Home Manager module imports (DRY principle)
+      homeModules = [
+        sops-nix.homeManagerModules.sops
+        ./modules/home/alacritty.nix
+        ./modules/home/atuin.nix
+        ./modules/home/bash.nix
+        ./modules/home/broot.nix
+        ./modules/home/broot-tips.nix
+        ./modules/home/claude.nix
+        ./modules/home/command-suggestions.nix
+        ./modules/home/direnv.nix
+        ./modules/home/exercism.nix
+        ./modules/home/fish.nix
+        ./modules/home/grype.nix
+        ./modules/home/hammerspoon.nix
+        ./modules/home/k9s.nix
+        ./modules/home/lnav.nix
+        ./modules/home/mise.nix
+        ./modules/home/navi.nix
+        ./modules/home/packages.nix
+        ./modules/home/sops.nix
+        ./modules/home/starship.nix
+        ./modules/home/syft.nix
+        ./modules/home/tmux.nix
+        ./modules/home/tmuxp.nix
+        ./modules/home/vim.nix
+      ];
+    in
+    {
+      darwinConfigurations.${hostname} = nix-darwin.lib.darwinSystem {
+        inherit system;
+        modules = [
+          # Host-specific configuration
+          ./hosts/bartsmykla
+
+          # Darwin system configuration
+          ./modules/darwin
+
+          # Set primary user (required for homebrew, system.defaults, etc.)
+          { system.primaryUser = username; }
+
+          # Home-manager module
+          home-manager.darwinModules.home-manager
+          ({ pkgs, lib, ... }: {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              backupFileExtension = "hm-backup";
+              users.${username} = { pkgs, lib, config, ... }: {
+                imports = homeModules;
+
+                home.username = username;
+                home.homeDirectory = lib.mkForce "/Users/bart.smykla@konghq.com";
+                home.stateVersion = "24.05";
+
+                programs.home-manager.enable = true;
+
+                programs.git = {
+                  enable = true;
+                  settings.user.name = "Bart Smykla";
+                  settings.user.email = "bartek@smykla.com";
+                };
+
+                # Add af package from flake input
+                home.packages = [ af.packages.${system}.default ];
+              };
+            };
+          })
+        ];
+      };
+
+      darwinPackages = self.darwinConfigurations.${hostname}.pkgs;
+
+      # Standalone Home Manager entry so the CLI can be run without sudo.
+      homeConfigurations = {
+        # Short alias to avoid quoting the @ in commands: home-manager switch --flake ./nix#home-bart
+        home-bart =
+          let
+            hmPkgs = import nixpkgs {
+              system = "aarch64-darwin";
+              config.allowUnfree = true;
+            };
+            envUser = builtins.getEnv "USER";
+            envHome = builtins.getEnv "HOME";
+            userName = if envUser != "" then envUser else username;
+            userHome = if envHome != "" then envHome else "/Users/${username}";
+          in
+          home-manager.lib.homeManagerConfiguration {
+            pkgs = hmPkgs;
+            modules = homeModules ++ [
+              {
+                home.username = userName;
+                home.homeDirectory = userHome;
+                home.stateVersion = "24.05";
+                # Add af package from flake input
+                home.packages = [ af.packages.${system}.default ];
+              }
+            ];
+          };
+      };
+    };
+}

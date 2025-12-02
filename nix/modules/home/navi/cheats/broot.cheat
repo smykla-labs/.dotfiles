@@ -1,0 +1,136 @@
+% broot, navigation, new
+
+# Vim-style line down/up [NEW]
+Ctrl-j / Ctrl-k
+
+# Vim-style page down/up [NEW]
+Ctrl-d / Ctrl-u
+
+# Go to parent directory [NEW]
+Ctrl-p
+
+# Go to home directory [NEW]
+Ctrl-home
+
+% broot, navigation
+
+# Navigate up/down tree
+↑ / ↓
+
+# Open directory or file
+Enter
+
+# Back/cancel action
+Esc
+
+# Cycle through matches
+Tab
+
+% broot, files, new
+
+# Create new directory [NEW]
+:md <name>
+
+% broot, files
+
+# Edit file in $EDITOR
+e or Ctrl-e
+
+# Create and edit new file
+:create <path>
+
+# Backup file with version
+Ctrl-b
+
+# Delete file/directory
+:rm
+
+# Copy file/directory
+:cp <dest>
+
+# Move/rename file
+:mv <dest>
+
+% broot, panel, new
+
+# Copy to other panel (Norton Commander) [NEW]
+F5
+
+# Move to other panel (Norton Commander) [NEW]
+F6
+
+% broot, panel
+
+# Open panel/preview
+Ctrl-→
+
+# Close panel/go back
+Ctrl-←
+
+% broot, git, new
+
+# Git status interactive [NEW]
+gs
+
+# Go to git root [NEW]
+gtr
+
+# Toggle git status filter [NEW]
+Alt-g
+
+% broot, git
+
+# Git diff current file
+gd
+
+# Stage file (built-in)
+Ctrl-g
+
+% broot, search, new
+
+# Total search (large dirs) [NEW]
+Ctrl-s
+
+% broot, search
+
+# Fuzzy search (just type!)
+<pattern>
+
+# Regex search
+/<pattern>
+
+# Search file content
+c/<pattern>
+
+% broot, toggle
+
+# Toggle gitignored files
+Alt-i
+
+# Toggle hidden files
+Alt-h
+
+# Show/hide file sizes
+:toggle_sizes
+
+# Show/hide permissions
+:toggle_perm
+
+% broot, misc, new
+
+# Reveal in Finder (macOS) [NEW]
+r
+
+% broot, misc
+
+# Show help (MASTER KEY!)
+?
+
+# Launch terminal here
+Ctrl-t
+
+# CD to dir and exit
+Alt-Enter
+
+# Exit broot
+Ctrl-c

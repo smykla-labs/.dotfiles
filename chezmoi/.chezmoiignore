@@ -49,3 +49,68 @@
 # Ignore auto-generated fish shell configuration files
 .config/fish/conf.d/omf.fish
 .config/fish/conf.d/rustup.fish
+
+# Nix-managed dotfiles (Phase 4 migration)
+# Note: Fish shell remains managed by chezmoi (has encrypted files)
+# Will migrate to sops-nix in Phase 5
+
+# Starship prompt (managed by home-manager programs.starship)
+.config/starship.toml
+
+# Tmux config (managed by home-manager programs.tmux)
+.tmux.conf
+.config/tmux
+
+# Vim config (managed by home-manager programs.vim)
+.vimrc
+.vimrc.d
+
+# Alacritty config (managed by home-manager programs.alacritty)
+.config/alacritty
+
+# Fish shell config (managed by home-manager programs.fish)
+# Abbreviations sourced from sops-nix secret at runtime
+.config/fish
+
+# Atuin config (managed by home-manager programs.atuin)
+.config/atuin
+
+# Direnv config (managed by home-manager programs.direnv)
+.config/direnv
+
+# K9s config (managed by home-manager + sops-nix)
+# Note: k9s/config.yaml is a sops secret, aliases/plugins/views are declarative
+.config/k9s
+
+# Exercism config (managed by home-manager + sops-nix)
+# Note: user.json contains API token, handled via sops secret
+.config/exercism
+
+# Mise config (managed by home-manager programs.mise)
+.config/mise
+
+# Broot config (managed by home-manager programs.broot)
+.config/broot
+
+# Grype config (managed by home-manager xdg.configFile)
+.config/grype
+
+# Syft config (managed by home-manager xdg.configFile)
+.config/syft
+
+# Tmuxp config (managed by home-manager xdg.configFile)
+.config/tmuxp
+
+# Lnav config (managed by home-manager home.file)
+.lnav
+
+# Bash config (managed by home-manager programs.bash)
+.bashrc
+.profile
+.bash_profile
+
+# Claude Code config (managed by home-manager + sops-nix)
+# CLAUDE.md, installed_plugins.json, known_marketplaces.json are sops secrets
+.claude/CLAUDE.md
+.claude/installed_plugins.json
+.claude/known_marketplaces.json
