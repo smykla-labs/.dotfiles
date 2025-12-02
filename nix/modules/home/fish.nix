@@ -161,11 +161,26 @@
         --color=bg+:-1,gutter:-1 \
         --bind='ctrl-/:toggle-preview'"
 
+      # fzf shell integration options
+      # CTRL-T: File search with bat preview and syntax highlighting
+      set --export FZF_CTRL_T_OPTS "\
+        --walker-skip .git,node_modules,target \
+        --preview 'bat --style=numbers --color=always --line-range :500 {}' \
+        --bind 'ctrl-/:change-preview-window(down|hidden|)'"
+
+      # ALT-C: Directory navigation with eza/tree preview
+      set --export FZF_ALT_C_OPTS "\
+        --preview 'eza --all --long --icons always --tree --level=2 --color=always {} 2>/dev/null || tree -C -L 2 {} 2>/dev/null || ls -A -F {}'"
+
       # fzf.fish history-specific options
       # Better time format showing relative day if recent
       set --global fzf_history_time_format "%Y-%m-%d %H:%M"
       # Additional history options (appended to defaults)
       set --global fzf_history_opts "--no-sort"
+
+      # fzf.fish directory preview customization
+      # Use eza for better directory listings with icons and colors
+      set --global fzf_preview_dir_cmd "eza --all --long --icons always --color=always"
 
       # Homebrew (skip if already initialized to speed up subshells)
       if not set -q HOMEBREW_PREFIX
