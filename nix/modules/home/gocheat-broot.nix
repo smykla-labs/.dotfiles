@@ -19,7 +19,8 @@
   ];
 
   # Configure gocheat with broot shortcuts
-  xdg.configFile."gocheat/config.json".text = builtins.toJSON {
+  # macOS uses ~/Library/Application Support instead of ~/.config
+  home.file."Library/Application Support/gocheat/config.json".text = builtins.toJSON {
     description = "Broot Keyboard Shortcuts - Focus on NEW shortcuts";
     entries = [
       # Navigation - NEW Shortcuts
