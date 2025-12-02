@@ -23,9 +23,14 @@
       url = "github:smykla-labs/af";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    klaudiush = {
+      url = "github:smykla-labs/klaudiush?dir=nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, sops-nix, af, ... }:
+  outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, sops-nix, af, klaudiush, ... }:
     let
       system = "aarch64-darwin";
       hostname = "bartsmykla";
@@ -35,6 +40,7 @@
       # Shared Home Manager module imports (DRY principle)
       homeModules = [
         sops-nix.homeManagerModules.sops
+        klaudiush.homeManagerModules.default
         ./modules/home/alacritty.nix
         ./modules/home/atuin.nix
         ./modules/home/bash.nix
@@ -48,6 +54,7 @@
         ./modules/home/grype.nix
         ./modules/home/hammerspoon.nix
         ./modules/home/k9s.nix
+        ./modules/home/klaudiush.nix
         ./modules/home/lnav.nix
         ./modules/home/mise.nix
         ./modules/home/navi.nix
@@ -72,6 +79,15 @@
 
           # Set primary user (required for homebrew, system.defaults, etc.)
           { system.primaryUser = username; }
+
+          # Overlay to add klaudiush to pkgs
+          ({ pkgs, ... }: {
+            nixpkgs.overlays = [
+              (final: prev: {
+                klaudiush = klaudiush.packages.${system}.default;
+              })
+            ];
+          })
 
           # Home-manager module
           home-manager.darwinModules.home-manager
@@ -113,6 +129,11 @@
             hmPkgs = import nixpkgs {
               system = "aarch64-darwin";
               config.allowUnfree = true;
+              overlays = [
+                (final: prev: {
+                  klaudiush = klaudiush.packages.${system}.default;
+                })
+              ];
             };
             envUser = builtins.getEnv "USER";
             envHome = builtins.getEnv "HOME";
