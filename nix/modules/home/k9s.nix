@@ -51,7 +51,12 @@
 
   # Activation script to symlink sops secret to k9s config location
   home.activation.k9sConfig = lib.hm.dag.entryAfter [ "writeBoundary" "sops-nix" ] ''
-    darwin_temp_dir=$(getconf DARWIN_USER_TEMP_DIR 2>/dev/null)
+    if [ -x /usr/bin/getconf ]; then
+      darwin_temp_dir=$(/usr/bin/getconf DARWIN_USER_TEMP_DIR 2>/dev/null)
+    else
+      darwin_temp_dir=""
+    fi
+
     if [ -n "$darwin_temp_dir" ] && [ -f "$darwin_temp_dir/secrets/k9s-config.yaml" ]; then
       $DRY_RUN_CMD mkdir -p "$HOME/.config/k9s"
       $DRY_RUN_CMD ln -sf "$darwin_temp_dir/secrets/k9s-config.yaml" "$HOME/.config/k9s/config.yaml"

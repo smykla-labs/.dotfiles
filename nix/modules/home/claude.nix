@@ -9,7 +9,7 @@
 let
   # Get the Darwin temp directory for sops secrets
   # sops-nix on Darwin uses $DARWIN_USER_TEMP_DIR/secrets/
-  secretsDir = ''$(getconf DARWIN_USER_TEMP_DIR)/secrets'';
+  secretsDir = ''$(/usr/bin/getconf DARWIN_USER_TEMP_DIR 2>/dev/null)/secrets'';
 in
 {
   # Create ~/.claude directory
@@ -18,7 +18,11 @@ in
   # Symlink CLAUDE.md from sops secret
   home.activation.linkClaudeSecrets = lib.hm.dag.entryAfter [ "writeBoundary" "sops-nix" ] ''
     # Get the actual temp directory
-    TEMP_DIR="$(getconf DARWIN_USER_TEMP_DIR)"
+    if [ -x /usr/bin/getconf ]; then
+      TEMP_DIR="$(/usr/bin/getconf DARWIN_USER_TEMP_DIR 2>/dev/null)"
+    else
+      TEMP_DIR=""
+    fi
 
     # Create symlinks for Claude secrets
     if [ -f "$TEMP_DIR/secrets/claude-CLAUDE.md" ]; then
