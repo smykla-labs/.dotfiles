@@ -104,10 +104,6 @@ Describe 'Taskfile'
             The output should include "test:brewfile"
         End
 
-        It 'has test:fish task'
-            When call task --list
-            The output should include "test:fish"
-        End
 
         It 'has test:shellspec task'
             When call task --list
@@ -121,10 +117,6 @@ Describe 'Taskfile'
     End
 
     Describe 'Lint tasks exist'
-        It 'has lint:fish task'
-            When call task --list
-            The output should include "lint:fish"
-        End
 
         It 'has lint:markdown task'
             When call task --list
@@ -167,7 +159,6 @@ Describe 'Taskfile'
             When call task test --summary
             The status should be success
             The output should include "test:syntax"
-            The output should include "test:fish"
             The output should include "test:brewfile"
             The output should include "test:shellspec"
         End
@@ -181,7 +172,6 @@ Describe 'Taskfile'
         It 'lint task includes all lint subtasks'
             When call task lint --summary
             The status should be success
-            The output should include "lint:fish"
             The output should include "lint:shell"
             The output should include "lint:markdown"
             The output should include "lint:taskfile"
@@ -193,11 +183,6 @@ Describe 'Taskfile'
             The output should be present
         End
 
-        It 'test:fish task can be summarized'
-            When call task test:fish --summary
-            The status should be success
-            The output should be present
-        End
 
         It 'test:syntax task can be summarized'
             When call task test:syntax --summary
@@ -205,11 +190,6 @@ Describe 'Taskfile'
             The output should be present
         End
 
-        It 'lint:fish task can be summarized'
-            When call task lint:fish --summary
-            The status should be success
-            The output should be present
-        End
 
         It 'lint:shell task can be summarized'
             When call task lint:shell --summary

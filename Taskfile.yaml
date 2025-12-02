@@ -171,14 +171,13 @@ tasks:
     desc: Run all tests
     summary: |
       Run comprehensive test suite:
-      - Syntax validation (Fish, shell scripts)
+      - Syntax validation (shell scripts)
       - Configuration loading tests
       - Brewfile validity
       - ShellSpec test suite
       - Documentation structure
     deps:
       - test:syntax
-      - test:fish
       - test:brewfile
       - test:shellspec
     cmds:
@@ -191,7 +190,6 @@ tasks:
       Compares current branch against main/master to detect changes.
 
       Tests run based on file types changed:
-      - Fish files → test:fish
       - Shell scripts → test:syntax:shell
       - Brewfile → test:brewfile
       - spec/ directory → test:shellspec
@@ -209,23 +207,10 @@ tasks:
           task test
           exit $?
         fi
-      - task: test:changed:fish
       - task: test:changed:shell
       - task: test:changed:brewfile
       - task: test:changed:shellspec
       - echo "✅ Changed file tests passed!"
-
-  test:changed:fish:
-    desc: Test Fish files if changed
-    internal: true
-    vars:
-      DEFAULT_BRANCH:
-        sh: git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@' || echo "main"
-    status:
-      - test -z "$(git diff --name-only origin/{{.DEFAULT_BRANCH}}...HEAD 2>/dev/null | grep '\.fish$')"
-    cmds:
-      - echo "▶ Fish files changed, running tests"
-      - task test:fish
 
   test:changed:shell:
     desc: Test shell scripts if changed
@@ -265,21 +250,9 @@ tasks:
       - task test:shellspec
 
   test:syntax:
-    desc: Check syntax of all shell and Fish scripts
+    desc: Check syntax of all shell scripts
     deps:
-      - test:syntax:fish
       - test:syntax:shell
-
-  test:syntax:fish:
-    desc: Check Fish script syntax
-    internal: true
-    dir: '{{.G_DOTFILES}}'
-    sources:
-      - 'chezmoi/private_dot_config/fish/**/*.fish'
-    cmds:
-      - echo "Checking Fish scripts..."
-      - find chezmoi/private_dot_config/fish -name "*.fish" -type f -exec fish -n {} +
-      - echo "✓ Fish scripts valid"
 
   test:syntax:shell:
     desc: Check shell script syntax
@@ -296,16 +269,6 @@ tasks:
           -not -path "./chezmoi/dot_tmux/*" \
           -print0 | xargs -0 -r shellcheck
       - echo "✓ Shell scripts valid"
-
-  test:fish:
-    desc: Test Fish configuration loads without errors
-    cmds:
-      - echo "▶ Testing Fish configuration"
-      - |
-        # Test loading actual config from chezmoi source
-        export XDG_CONFIG_HOME="{{.G_DOTFILES}}/chezmoi/private_dot_config"
-        fish -c "echo 'Fish config loads successfully'"
-      - echo "✓ Fish configuration valid"
 
   test:brewfile:
     desc: Validate Brewfile syntax and dependencies
@@ -337,13 +300,11 @@ tasks:
     summary: |
       Run code quality checks:
       - shellcheck on shell scripts
-      - Fish syntax validation
       - markdownlint on documentation
       - Taskfile schema validation
       - GitHub Actions workflow linting
     deps:
       - lint:shell
-      - lint:fish
       - lint:markdown
       - lint:taskfile
       - lint:actions
@@ -369,16 +330,6 @@ tasks:
           -not -path "./chezmoi/dot_tmux/*" \
           -print0 | xargs -0 -r shellcheck
       - echo "✓ Shell scripts pass shellcheck"
-
-  lint:fish:
-    desc: Check Fish script syntax
-    dir: '{{.G_DOTFILES}}'
-    sources:
-      - 'chezmoi/private_dot_config/fish/**/*.fish'
-    cmds:
-      - echo "▶ Linting Fish scripts"
-      - find chezmoi/private_dot_config/fish -name "*.fish" -type f -exec fish -n {} +
-      - echo "✓ Fish scripts valid"
 
   lint:markdown:
     desc: Lint Markdown files with markdownlint
