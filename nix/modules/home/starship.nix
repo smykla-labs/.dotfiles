@@ -7,7 +7,7 @@
 {
   programs.starship = {
     enable = true;
-    enableFishIntegration = false;
+    enableFishIntegration = true;
 
     settings = {
       "$schema" = "https://starship.rs/config-schema.json";
