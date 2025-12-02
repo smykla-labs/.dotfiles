@@ -52,6 +52,10 @@
             # Enable fish shell system-wide with nix-darwin paths
             programs.fish = {
               enable = true;
+              # Use babelfish to pre-translate bash scripts at build time
+              # instead of foreign-env (fenv) translating at runtime (~250ms savings)
+              useBabelfish = true;
+              babelfishPackage = pkgs.babelfish;
               shellInit = ''
                 # Add nix-darwin managed paths
                 fish_add_path --prepend --move /run/current-system/sw/bin

@@ -11,7 +11,7 @@
   programs.mise = {
     enable = true;
 
-    # Enable fish shell integration
+    # Enable fish shell integration (full activation with hook-env per prompt)
     enableFishIntegration = true;
 
     # Global tool configuration
