@@ -154,6 +154,10 @@
         --highlight-line \
         --info=inline-right \
         --tmux=bottom,50% \
+        --color=fg:#f8f8f2,bg:#272822,hl:#66d9ef \
+        --color=fg+:#f8f8f2,bg+:#3e3d32,hl+:#66d9ef \
+        --color=info:#a6e22e,prompt:#f92672,pointer:#ae81ff \
+        --color=marker:#a6e22e,spinner:#ae81ff,header:#75715e \
         --color=bg+:-1,gutter:-1 \
         --bind='ctrl-/:toggle-preview'"
 

@@ -1,0 +1,235 @@
+% fish, abbreviations, utilities
+
+# Git clone to projects directory
+git_clone_to_projects
+# Abbr: pgc
+
+# E2E cleanup (kind clusters and docker containers)
+make kind/stop/all; docker stop (docker ps -aq)
+# Abbr: e2e_clean
+
+# Copy with rsync progress
+rsync -aP
+# Abbr: cp
+
+# Brew install
+brew install
+# Abbr: bi
+
+# Brew install cask
+brew install --cask
+# Abbr: bic
+
+# Brew info
+brew info
+# Abbr: binf
+
+# Brew search
+brew search
+# Abbr: bs
+
+# Change to dotfiles directory
+cd $HOME/Projects/github.com/bartsmykla/.dotfiles/
+# Abbr: b.
+
+# Change to bartsmykla directory
+cd $HOME/Projects/github.com/bartsmykla/
+# Abbr: b
+
+# CD to last cloned repo
+cd $__LAST_CLONED_REPO_PATH
+# Abbr: cdl
+
+# Remove host from known_hosts
+ssh-keygen -R <host>
+# Abbr: forget
+
+# Kubectl
+kubectl
+# Abbr: k
+
+# Kumactl
+kumactl
+# Abbr: km
+
+# Tmuxinator
+tmuxinator
+# Abbr: mux
+
+# Tmuxp load dev
+tmuxp load dev
+# Abbr: td
+
+# Mutagen sync create
+set name (basename (pwd)); mutagen sync create --name=$name (pwd) bart@smyk.la:~/$name
+# Abbr: msync
+
+# SSH without host key checking
+ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
+# Abbr: sshno
+
+# Set Kubernetes namespace
+kubectl config set-context --current --namespace <namespace>
+# Abbr: set-ns
+
+# List files (eza)
+eza --all --long --icons always
+# Abbr: l
+
+# List tree (eza)
+eza --all --long --icons always --tree
+# Abbr: lt
+
+% fish, abbreviations, git
+
+# Git add
+git add
+# Abbr: ga
+
+# Git add all
+git add -A
+# Abbr: gaa
+
+# Git checkout
+git checkout
+# Abbr: gco
+
+# Git checkout branch
+git checkout -b
+# Abbr: gcb
+
+# Git commit signed
+git commit -sS
+# Abbr: gcs
+
+# Git status
+git status
+# Abbr: gst
+
+# Git push origin current branch
+git push origin (git branch --show-current)
+# Abbr: ggp
+
+# Git push force-with-lease origin current branch
+git push --force-with-lease origin (git branch --show-current)
+# Abbr: ggpf
+
+# Git clean merged branches
+git_clean_branches
+# Abbr: gbda
+
+% fish, abbreviations, git-push-origin-first
+
+# Push to origin with set-upstream
+git-push-origin-first
+# Abbr: po
+
+# Push to origin force
+git-push-origin-first-force
+# Abbr: poF
+
+# Push to origin force-with-lease
+git-push-origin-first-force-with-lease
+# Abbr: pof
+
+# Push to origin no-verify
+git-push-origin-first-no-verify
+# Abbr: pon
+
+# Push to origin no-verify force
+git-push-origin-first-no-verify-force
+# Abbr: ponF
+
+# Push to origin no-verify force-with-lease
+git-push-origin-first-no-verify-force-with-lease
+# Abbr: ponf
+
+% fish, abbreviations, git-push-origin
+
+# Push to origin (no set-upstream)
+git-push-origin
+# Abbr: pO
+
+# Push to origin force (no set-upstream)
+git-push-origin-force
+# Abbr: pOF
+
+# Push to origin force-with-lease (no set-upstream)
+git-push-origin-force-with-lease
+# Abbr: pOf
+
+# Push to origin no-verify (no set-upstream)
+git-push-origin-no-verify
+# Abbr: pOn
+
+# Push to origin no-verify force (no set-upstream)
+git-push-origin-no-verify-force
+# Abbr: pOnF
+
+# Push to origin no-verify force-with-lease (no set-upstream)
+git-push-origin-no-verify-force-with-lease
+# Abbr: pOnf
+
+% fish, abbreviations, git-push-upstream-first
+
+# Push to upstream with set-upstream
+git-push-upstream-first
+# Abbr: pu
+
+# Push to upstream force
+git-push-upstream-first-force
+# Abbr: puF
+
+# Push to upstream force-with-lease
+git-push-upstream-first-force-with-lease
+# Abbr: puf
+
+# Push to upstream no-verify
+git-push-upstream-first-no-verify
+# Abbr: pun
+
+# Push to upstream no-verify force
+git-push-upstream-first-no-verify-force
+# Abbr: punF
+
+# Push to upstream no-verify force-with-lease
+git-push-upstream-first-no-verify-force-with-lease
+# Abbr: punf
+
+% fish, abbreviations, git-push-upstream
+
+# Push to upstream (no set-upstream)
+git-push-upstream
+# Abbr: pU
+
+# Push to upstream force (no set-upstream)
+git-push-upstream-force
+# Abbr: pUF
+
+# Push to upstream force-with-lease (no set-upstream)
+git-push-upstream-force-with-lease
+# Abbr: pUf
+
+# Push to upstream no-verify (no set-upstream)
+git-push-upstream-no-verify
+# Abbr: pUn
+
+# Push to upstream no-verify force (no set-upstream)
+git-push-upstream-no-verify-force
+# Abbr: pUnF
+
+# Push to upstream no-verify force-with-lease (no set-upstream)
+git-push-upstream-no-verify-force-with-lease
+# Abbr: pUnf
+
+% fish, abbreviations, aws
+
+# AWS login (saml2aws)
+saml2aws --session-duration 43200 -a kong-sandbox-mesh login && eval (saml2aws script -a kong-sandbox-mesh)
+# Abbr: awslogin
+
+% fish, abbreviations, kubernetes
+
+# Purge all Kuma/Kong Mesh resources
+kubectl get endpointslice,replicaset,mutatingwebhookconfiguration,validatingwebhookconfiguration,configmap,secret,crd,svc,clusterrole,clusterrolebinding,role,rolebinding,deploy,serviceaccount,ingress -A -o json | jq -r '.items[] | select(.metadata.name | contains("kong-mesh") or contains("kuma")) | select(.kind != "Namespace" and .kind != "Pod") | select(.kind != "Secret" or .metadata.name != "kong-mesh-license") | .metadata.namespace as $ns | "\\(.kind | ascii_downcase)/\\(.metadata.name)" as $res | if $ns then "-n \\($ns) \\($res)" else "\\($res)" end' | xargs -d "\\n" -I "{}" /bin/bash -c 'kubectl delete {} &'; wait
+# Abbr: purge_kuma

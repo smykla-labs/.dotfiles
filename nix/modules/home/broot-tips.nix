@@ -34,7 +34,7 @@
               "💡 TIP: Default flags are now -ghc (git/hidden/counts)" \
               "💡 TIP: Press ? in broot to see ALL shortcuts!" \
               "💡 TIP: Use Ctrl-→ for preview panel" \
-              "💡 TIP: Type 'bk' for full cheatsheet (gocheat)"
+              "💡 TIP: Press Ctrl+G for full cheatsheet (navi)"
 
           # Select random tip
           set -l random_index (random 1 (count $tips))
