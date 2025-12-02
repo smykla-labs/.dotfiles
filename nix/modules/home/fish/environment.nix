@@ -90,11 +90,8 @@
     # Manual hook disabled since direnv.nix handles integration
     set --global direnv_fish_mode eval_on_arrow
 
-    # Starship prompt initialization with defensive check
-    # Only initialize if starship is available to prevent errors during nix profile switches
-    if command -q starship
-      starship init fish | source
-    end
+    # Note: Starship initialization handled by programs.starship in starship.nix
+    # Manual initialization disabled since starship.nix enableFishIntegration=true handles it
 
     # jump (autojump alternative)
     if command -q jump
