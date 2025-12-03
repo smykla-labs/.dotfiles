@@ -41,7 +41,6 @@
       homeModules = [
         sops-nix.homeManagerModules.sops
         klaudiush.homeManagerModules.default
-        ./modules/home/atuin.nix
         ./modules/home/bash.nix
         ./modules/home/broot.nix
         ./modules/home/broot-tips.nix
