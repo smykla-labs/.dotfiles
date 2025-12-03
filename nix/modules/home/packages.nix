@@ -22,6 +22,7 @@
     # starship - managed via programs.starship
     # tmux - managed via programs.tmux
     tmuxp         # Tmux session manager
+    asciinema     # Terminal session recorder
 
     # ============================================================================
     # File Management & Navigation

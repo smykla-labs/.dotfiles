@@ -41,7 +41,6 @@
       homeModules = [
         sops-nix.homeManagerModules.sops
         klaudiush.homeManagerModules.default
-        ./modules/home/alacritty.nix
         ./modules/home/atuin.nix
         ./modules/home/bash.nix
         ./modules/home/broot.nix
@@ -51,6 +50,8 @@
         ./modules/home/direnv.nix
         ./modules/home/exercism.nix
         ./modules/home/fish.nix
+        ./modules/home/ghostty.nix
+        ./modules/home/goland.nix
         ./modules/home/grype.nix
         ./modules/home/hammerspoon.nix
         ./modules/home/k9s.nix
