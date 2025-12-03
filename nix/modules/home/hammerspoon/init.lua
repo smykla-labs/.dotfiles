@@ -1,15 +1,54 @@
 -- Hammerspoon Config: Auto-adjust IDE font sizes based on active display
 -- Detects whether built-in display or external monitor is active
 -- Monitors display changes and system wake events
--- Lua 5.3 compatible with best practices applied
+-- Lua 5.3+ compatible with best practices applied
+--
+-- @module display-font-adjuster
+-- @version 2.0
+-- @author Bart Smykla
+-- @license MIT
+
+-------------------------------------------------------------------------------
+-- Debug Mode Configuration
+-------------------------------------------------------------------------------
+-- To enable debug mode, use one of these methods:
+--   1. Set environment variable: DEBUG_MODE=true hs
+--   2. Run in Hammerspoon console: toggleDebugMode()
+--   3. Use config UI: Cmd+Alt+Ctrl+H and enable Debug Mode
+--   4. Via IPC: hs -c "toggleDebugMode()"
+--
+-- Debug mode provides:
+--   - Startup alerts
+--   - Verbose logging (debug level)
+--   - Detailed display detection information
+--   - Font update operation details
+--
+-- See README.md for complete documentation
+
+-- Check environment variable for debug mode
+local debugModeFromEnv = os.getenv("DEBUG_MODE") == "true"
 
 -- Enable IPC for CLI debugging (hs command)
 require("hs.ipc")
 
--- Show alert on config load for debugging
-hs.alert.show("Hammerspoon config loaded", 2)
+-- Initialize logger with appropriate level (will be updated after config loads)
+local log = hs.logger.new('display-font-adjuster', 'warning')
 
-local log = hs.logger.new('display-font-adjuster', 'info')
+-------------------------------------------------------------------------------
+-- Constants
+-------------------------------------------------------------------------------
+
+-- Built-in display name patterns for detection
+local BUILTIN_DISPLAY_PATTERNS = {
+  "^Built%-in",  -- "Built-in Retina Display"
+  "^Color LCD",  -- Older MacBooks
+}
+
+-- Alert duration in seconds
+local ALERT_DURATION = 2
+
+-- Hotkey code for 'H' key
+local HOTKEY_H = 4
 
 -------------------------------------------------------------------------------
 -- Configuration Management
@@ -18,6 +57,7 @@ local log = hs.logger.new('display-font-adjuster', 'info')
 --- Load configuration from settings or use defaults
 local function loadConfig()
   local defaults = {
+    debugMode = false,  -- Debug mode disabled by default
     fontSizeWithMonitor = 15,
     fontSizeWithoutMonitor = 12,
     idePatterns = {
@@ -43,6 +83,11 @@ local function loadConfig()
     end
   end
 
+  -- Override with environment variable if set
+  if debugModeFromEnv then
+    defaults.debugMode = true
+  end
+
   return defaults
 end
 
@@ -52,8 +97,47 @@ local function saveConfig(config)
   log.i("Configuration saved")
 end
 
+--- Update logger level based on debug mode
+-- @param enabled Whether debug mode is enabled
+local function updateLoggerLevel(enabled)
+  if enabled then
+    log.setLogLevel('debug')
+    log.d("Debug mode enabled - verbose logging active")
+  else
+    log.setLogLevel('warning')
+    log.i("Debug mode disabled - only warnings and errors will be logged")
+  end
+end
+
+--- Global function to toggle debug mode (callable from IPC or console)
+function toggleDebugMode()
+  config.debugMode = not config.debugMode
+  updateLoggerLevel(config.debugMode)
+  saveConfig(config)
+
+  local status = config.debugMode and "enabled" or "disabled"
+  hs.alert.show(string.format("Debug mode %s", status), ALERT_DURATION)
+  log.i(string.format("Debug mode toggled: %s", status))
+end
+
+--- Global function to check debug mode status (callable from IPC or console)
+function debugModeStatus()
+  local status = config.debugMode and "enabled" or "disabled"
+  hs.alert.show(string.format("Debug mode is %s", status), ALERT_DURATION)
+  return config.debugMode
+end
+
 -- Load initial configuration
 local config = loadConfig()
+
+-- Apply debug mode settings
+updateLoggerLevel(config.debugMode)
+
+-- Show alert on config load only if debug mode is enabled
+if config.debugMode then
+  hs.alert.show("Hammerspoon config loaded (Debug Mode ON)", ALERT_DURATION)
+  log.d("Configuration loaded with debug mode enabled")
+end
 
 -- Module state
 local screenWatcher = nil
@@ -214,24 +298,18 @@ local function isExternalMonitorActive()
     return false
   end
 
-  -- Known built-in display name patterns
-  local builtInPatterns = {
-    "^Built%-in",  -- "Built-in Retina Display"
-    "^Color LCD",  -- Older MacBooks
-  }
-
   -- Check if any screen is an external monitor
   for _, screen in ipairs(allScreens) do
     local screenName = screen:name()
     local isBuiltIn = false
 
-    -- First try getInfo() if available
+    -- First try getInfo() if available (most reliable method)
     local screenInfo = screen:getInfo()
     if screenInfo and screenInfo.builtin ~= nil then
       isBuiltIn = screenInfo.builtin
     else
       -- Fallback: check screen name against known built-in patterns
-      for _, pattern in ipairs(builtInPatterns) do
+      for _, pattern in ipairs(BUILTIN_DISPLAY_PATTERNS) do
         if screenName:match(pattern) then
           isBuiltIn = true
           break
@@ -736,6 +814,32 @@ function showConfigUI()
       border-color: #007AFF;
       box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
     }
+    .checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: #f8f9fa;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .checkbox-wrapper:hover {
+      background: #e9ecef;
+      border-color: #007AFF;
+    }
+    .checkbox-wrapper input[type="checkbox"] {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      margin: 0;
+    }
+    .checkbox-wrapper label {
+      margin: 0;
+      cursor: pointer;
+      flex: 1;
+    }
     .ide-patterns-table {
       width: 100%%;
       border-collapse: collapse;
@@ -896,6 +1000,15 @@ function showConfigUI()
 <body>
   <div class="container">
     <h2>Display Font Adjuster Configuration</h2>
+
+    <h3>Debug Settings</h3>
+    <div class="config-item">
+      <div class="checkbox-wrapper">
+        <input type="checkbox" id="debugMode" %s>
+        <label for="debugMode">Enable Debug Mode</label>
+      </div>
+      <div class="description">Shows verbose logging and startup alerts (requires reload)</div>
+    </div>
 
     <h3>Font Sizes</h3>
     <div class="settings-row">
@@ -1096,6 +1209,7 @@ function showConfigUI()
       });
 
       const config = {
+        debugMode: document.getElementById('debugMode').checked,
         fontSizeWithMonitor: parseInt(document.getElementById('fontSizeWithMonitor').value),
         fontSizeWithoutMonitor: parseInt(document.getElementById('fontSizeWithoutMonitor').value),
         idePatterns: idePatterns,
@@ -1118,6 +1232,7 @@ function showConfigUI()
 </body>
 </html>
   ]],
+    config.debugMode and 'checked="checked"' or '',
     config.fontSizeWithMonitor,
     config.fontSizeWithoutMonitor,
     defaultHeadersHtml,
@@ -1181,15 +1296,20 @@ function showConfigUI()
         log.i("Save button clicked")
         local newConfig = action.data
 
-        log.i(string.format("New config: fontWithMonitor=%d, fontWithout=%d",
-          newConfig.fontSizeWithMonitor, newConfig.fontSizeWithoutMonitor))
+        log.i(string.format("New config: fontWithMonitor=%d, fontWithout=%d, debugMode=%s",
+          newConfig.fontSizeWithMonitor, newConfig.fontSizeWithoutMonitor,
+          tostring(newConfig.debugMode)))
 
         -- Update config with new values
+        config.debugMode = newConfig.debugMode
         config.fontSizeWithMonitor = newConfig.fontSizeWithMonitor
         config.fontSizeWithoutMonitor = newConfig.fontSizeWithoutMonitor
         config.idePatterns = newConfig.idePatterns
         config.wakeDelaySeconds = newConfig.wakeDelaySeconds
         config.pollIntervalSeconds = newConfig.pollIntervalSeconds
+
+        -- Update logger level if debug mode changed
+        updateLoggerLevel(config.debugMode)
 
         -- Save to persistent storage
         saveConfig(config)
@@ -1246,9 +1366,9 @@ configHotkeyTap = hs.eventtap.new({hs.eventtap.event.types.keyDown}, function(ev
     local flags = event:getFlags()
     local keyCode = event:getKeyCode()
 
-    -- Check for Cmd+Alt+Ctrl+H (keyCode 4 is 'H')
+    -- Check for Cmd+Alt+Ctrl+H
     -- Must have exactly cmd, alt, and ctrl (no shift or fn)
-    if keyCode == 4 and
+    if keyCode == HOTKEY_H and
        flags.cmd and
        flags.alt and
        flags.ctrl and
