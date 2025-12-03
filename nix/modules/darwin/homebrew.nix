@@ -59,6 +59,7 @@
       "hammerspoon"                           # macOS automation
       "rectangle"                             # Window management
       "alacritty"                             # GPU terminal emulator
+      "ghostty"                               # Fast native terminal emulator
       "iterm2"                                # Terminal emulator
       "kitty"                                 # GPU terminal emulator
       "brave-browser"                         # Privacy browser
