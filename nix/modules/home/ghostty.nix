@@ -60,8 +60,14 @@ in
 
       # Aesthetics
       background-opacity = 0.95;
-      unfocused-split-opacity = 0.5;
-      unfocused-split-fill = "#000000";
+
+      # Unfocused split configuration
+      # Moderate dimming with subtle color tint for better distinction
+      unfocused-split-opacity = 0.65;
+      unfocused-split-fill = "#1a1a1a";
+
+      # Bright, visible divider (coral/salmon pink from terminal)
+      split-divider-color = "#E06C75";
 
       # Performance
       adjust-cell-width = 0;
