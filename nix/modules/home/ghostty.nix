@@ -21,12 +21,14 @@ in
     settings = {
       # Font configuration
       font-family = "FiraCode Nerd Font Mono";
-      font-size = 20;
+      font-size = 15;
+      font-thicken = true;
 
       # Window configuration
       window-decoration = "auto";
       macos-option-as-alt = true;
-      macos-titlebar-style = "hidden";
+      macos-titlebar-style = "tabs";
+      window-show-tab-bar = "auto";
 
       # Start in fullscreen (like Alacritty config)
       fullscreen = true;
@@ -36,6 +38,9 @@ in
 
       # Shell - just fish, no tmux
       command = fishPath;
+
+      # Shell integration (title needed for fish_title to work)
+      shell-integration-features = "cursor,sudo,title";
 
       # Quick Terminal (drop-down from top)
       quick-terminal-position = "top";
@@ -48,12 +53,20 @@ in
       # Copy/paste behavior
       copy-on-select = "clipboard";
       clipboard-paste-protection = false;
+      clipboard-trim-trailing-spaces = true;
 
       # Always confirm before closing (protects against accidental Cmd+Q)
       confirm-close-surface = "always";
 
-      # Theme (can be changed to match your preference)
-      # theme = "GruvboxDark";
+      # Aesthetics
+      background-opacity = 0.95;
+      unfocused-split-opacity = 0.7;
+
+      # Performance
+      adjust-cell-width = 0;
+
+      # Theme
+      theme = "Monokai Classic";
 
       # Keybindings (list format required for duplicate keys)
       # Using Ctrl+a as prefix (tmux-like)
@@ -62,10 +75,18 @@ in
         "shift+enter=text:\\n"
 
         # Quick Terminal global hotkey (requires Accessibility permission)
-        "global:alt+space=toggle_quick_terminal"
+        "global:cmd+grave_accent=toggle_quick_terminal"
+
+        # Inspector for debugging keybindings
+        "super+i=inspector:toggle"
 
         # Splits (tmux-like: Ctrl+a then | or -)
-        "ctrl+a>|=new_split:right"
+        # Try shift+backslash explicitly (should produce |)
+        "ctrl+a>shift+backslash=new_split:right"
+        # Also keep v/s as fallback
+        "ctrl+a>v=new_split:right"
+        "ctrl+a>s=new_split:down"
+        # Horizontal split with -
         "ctrl+a>-=new_split:down"
         "ctrl+a>z=toggle_split_zoom"
 
@@ -87,6 +108,9 @@ in
         "ctrl+a>p=previous_tab"
         "ctrl+a>w=close_surface"
 
+        # Reload config (tmux-like)
+        "ctrl+a>r=reload_config"
+
         # Jump to tab by number (Alt+1-9 like current tmux)
         "alt+one=goto_tab:1"
         "alt+two=goto_tab:2"
@@ -97,6 +121,20 @@ in
         "alt+seven=goto_tab:7"
         "alt+eight=goto_tab:8"
         "alt+nine=goto_tab:9"
+
+        # Alternative tab navigation
+        "cmd+shift+right=next_tab"
+        "cmd+shift+left=previous_tab"
+
+        # Shell integration - jump between prompts
+        "ctrl+shift+up=jump_to_prompt:-1"
+        "ctrl+shift+down=jump_to_prompt:1"
+
+        # Clear screen (ctrl+a then x)
+        "ctrl+a>x=clear_screen"
+
+        # Equalize splits (ctrl+a then e)
+        "ctrl+a>e=equalize_splits"
       ];
     };
   };
