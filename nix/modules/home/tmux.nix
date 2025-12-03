@@ -21,7 +21,7 @@
     historyLimit = 5000;
     mouse = true;
     keyMode = "vi";
-    terminal = "alacritty";
+    terminal = "tmux-256color";
 
     # TPM plugins
     plugins = with pkgs.tmuxPlugins; [
@@ -86,9 +86,6 @@
       bind -r J resize-pane -D 5
       bind -r K resize-pane -U 5
       bind -r L resize-pane -R 5
-
-      # Alacritty terminal features
-      set -as terminal-features ",alacritty:RGB"
 
       set -g status-interval 5
       set -g display-time 750
