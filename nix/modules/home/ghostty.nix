@@ -147,8 +147,14 @@ in
         "ctrl+shift+up=jump_to_prompt:-1"
         "ctrl+shift+down=jump_to_prompt:1"
 
+        # Clear screen and scrollback (ctrl+a then ctrl+d, matching tmux)
+        "ctrl+a>ctrl+d=clear_screen"
+
         # Clear screen (ctrl+a then x)
         "ctrl+a>x=clear_screen"
+
+        # Kill split/pane (ctrl+a then shift+x, matching tmux)
+        "ctrl+a>shift+x=close_surface"
 
         # Equalize splits (ctrl+a then e)
         "ctrl+a>e=equalize_splits"
