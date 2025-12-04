@@ -60,6 +60,8 @@ local function loadConfig()
     debugMode = false,  -- Debug mode disabled by default
     fontSizeWithMonitor = 15,
     fontSizeWithoutMonitor = 12,
+    ghosttyFontSizeWithMonitor = 20,
+    ghosttyFontSizeWithoutMonitor = 15,
     idePatterns = {
       "GoLand*",
       "WebStorm*",
@@ -512,6 +514,80 @@ local function updateJetBrainsIDEFontSize(fontSize)
   end
 end
 
+--- Update Ghostty terminal font size via config file modification and reload
+-- Since set_font_size is per-split, we instead modify the config file and reload
+-- This updates ALL splits/tabs/windows globally via ctrl+a>r (reload_config)
+-- @param fontSize number - target font size
+local function updateGhosttyFontSize(fontSize)
+  local ghostty = hs.application.find("Ghostty")
+  if not ghostty then
+    log.d("Ghostty not running, skipping font update")
+    return
+  end
+
+  log.i(string.format("Updating Ghostty font size to %d via config reload", fontSize))
+
+  -- Path to Ghostty config (managed by Nix/home-manager)
+  local configPath = os.getenv("HOME") .. "/.config/ghostty/config"
+
+  -- Read current config
+  local file = io.open(configPath, "r")
+  if not file then
+    log.w(string.format("Cannot read Ghostty config file: %s", configPath))
+    return
+  end
+
+  local content = file:read("*all")
+  file:close()
+
+  -- Replace font-size line (handles various spacing)
+  local newContent, replacements = content:gsub("font%-size%s*=%s*%d+", "font-size = " .. fontSize)
+
+  if replacements == 0 then
+    log.w("Could not find font-size setting in Ghostty config")
+    return
+  end
+
+  -- Write updated config
+  file = io.open(configPath, "w")
+  if not file then
+    log.w(string.format("Cannot write Ghostty config file (may be read-only): %s", configPath))
+    log.w("If config is managed by Nix, home-manager may have created a read-only file")
+    return
+  end
+
+  file:write(newContent)
+  file:close()
+
+  log.i(string.format("Updated font-size in %s", configPath))
+
+  -- Send reload_config command to Ghostty (affects all splits/tabs/windows)
+  local windows = ghostty:allWindows()
+  if not windows or #windows == 0 then
+    log.w("No Ghostty windows found to send reload command")
+    return
+  end
+
+  -- Remember currently focused window
+  local currentlyFocused = hs.window.focusedWindow()
+
+  -- Focus any Ghostty window and send reload command
+  windows[1]:focus()
+  hs.timer.usleep(20000)  -- 20ms
+
+  -- Send ctrl+a>r (reload_config)
+  hs.eventtap.keyStroke({"ctrl"}, "a", 0, ghostty)
+  hs.timer.usleep(50000)  -- 50ms
+  hs.eventtap.keyStroke({}, "r", 0, ghostty)
+
+  -- Restore focus
+  if currentlyFocused and currentlyFocused:isVisible() then
+    currentlyFocused:focus()
+  end
+
+  log.i("Sent reload_config to Ghostty - all splits/tabs/windows updated")
+end
+
 --- Handle screen configuration changes
 -- Called when display configuration changes or system wakes from sleep
 -- Determines which displays are active and applies appropriate font size
@@ -537,10 +613,14 @@ local function screenChanged()
     -- External monitor connected (use larger font for external or dual display)
     log.i(string.format("Using larger font size %d for external monitor", config.fontSizeWithMonitor))
     updateJetBrainsIDEFontSize(config.fontSizeWithMonitor)
+    log.i(string.format("Using larger Ghostty font size %d for external monitor", config.ghosttyFontSizeWithMonitor))
+    updateGhosttyFontSize(config.ghosttyFontSizeWithMonitor)
   else
     -- Only built-in display
     log.i(string.format("Using smaller font size %d for built-in display", config.fontSizeWithoutMonitor))
     updateJetBrainsIDEFontSize(config.fontSizeWithoutMonitor)
+    log.i(string.format("Using smaller Ghostty font size %d for built-in display", config.ghosttyFontSizeWithoutMonitor))
+    updateGhosttyFontSize(config.ghosttyFontSizeWithoutMonitor)
   end
 end
 
@@ -1015,7 +1095,7 @@ function showConfigUI()
       <div class="description">Shows verbose logging and startup alerts (requires reload)</div>
     </div>
 
-    <h3>Font Sizes</h3>
+    <h3>JetBrains Font Sizes</h3>
     <div class="settings-row">
       <div class="config-item">
         <label>Font Size with External Monitor</label>
@@ -1025,6 +1105,20 @@ function showConfigUI()
       <div class="config-item">
         <label>Font Size without External Monitor</label>
         <input type="number" id="fontSizeWithoutMonitor" min="8" max="30" value="%d">
+        <div class="description">Smaller font for built-in display only</div>
+      </div>
+    </div>
+
+    <h3>Ghostty Font Sizes</h3>
+    <div class="settings-row">
+      <div class="config-item">
+        <label>Font Size with External Monitor</label>
+        <input type="number" id="ghosttyFontSizeWithMonitor" min="8" max="40" value="%d">
+        <div class="description">Larger font for external or dual display mode</div>
+      </div>
+      <div class="config-item">
+        <label>Font Size without External Monitor</label>
+        <input type="number" id="ghosttyFontSizeWithoutMonitor" min="8" max="40" value="%d">
         <div class="description">Smaller font for built-in display only</div>
       </div>
     </div>
@@ -1217,6 +1311,8 @@ function showConfigUI()
         debugMode: document.getElementById('debugMode').checked,
         fontSizeWithMonitor: parseInt(document.getElementById('fontSizeWithMonitor').value),
         fontSizeWithoutMonitor: parseInt(document.getElementById('fontSizeWithoutMonitor').value),
+        ghosttyFontSizeWithMonitor: parseInt(document.getElementById('ghosttyFontSizeWithMonitor').value),
+        ghosttyFontSizeWithoutMonitor: parseInt(document.getElementById('ghosttyFontSizeWithoutMonitor').value),
         idePatterns: idePatterns,
         wakeDelaySeconds: parseFloat(document.getElementById('wakeDelaySeconds').value),
         pollIntervalSeconds: parseFloat(document.getElementById('pollIntervalSeconds').value)
@@ -1240,6 +1336,8 @@ function showConfigUI()
     config.debugMode and 'checked="checked"' or '',
     config.fontSizeWithMonitor,
     config.fontSizeWithoutMonitor,
+    config.ghosttyFontSizeWithMonitor,
+    config.ghosttyFontSizeWithoutMonitor,
     defaultHeadersHtml,
     defaultCheckboxesHtml,
     customPatternsHtml,
