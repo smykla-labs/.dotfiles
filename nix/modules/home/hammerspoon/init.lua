@@ -60,6 +60,9 @@ local function loadConfig()
     debugMode = false,  -- Debug mode disabled by default
     fontSizeWithMonitor = 15,
     fontSizeWithoutMonitor = 12,
+    ghosttyFontSizeWithMonitor = 20,
+    ghosttyFontSizeWithoutMonitor = 15,
+    ghosttyConfigOverlayPath = os.getenv("HOME") .. "/.config/ghostty/config.local",
     idePatterns = {
       "GoLand*",
       "WebStorm*",
@@ -461,7 +464,12 @@ local function updateJetBrainsIDEFontSize(fontSize)
 
     for _, app in ipairs(runningApps) do
       local appName = app:name()
-      local appPath = app:path()
+
+      -- Safely get app path - some system processes don't have valid bundles
+      local success, appPath = pcall(function() return app:path() end)
+      if not success then
+        appPath = nil
+      end
 
       -- Check if this is a JetBrains IDE
       -- Filter: must be in Applications and have exact IDE name (not system services)
@@ -507,6 +515,64 @@ local function updateJetBrainsIDEFontSize(fontSize)
   end
 end
 
+--- Update Ghostty terminal font size via config file modification and reload
+-- Since set_font_size is per-split, we instead modify the config file and reload
+-- This updates ALL splits/tabs/windows globally via ctrl+a>r (reload_config)
+-- @param fontSize number - target font size
+local function updateGhosttyFontSize(fontSize)
+  local ghostty = hs.application.find("Ghostty")
+  if not ghostty then
+    log.d("Ghostty not running, skipping font update")
+    return
+  end
+
+  log.i(string.format("Updating Ghostty font size to %d via config overlay", fontSize))
+
+  -- Path to Ghostty config overlay (writable, not managed by Nix)
+  local overlayPath = config.ghosttyConfigOverlayPath
+
+  -- Create overlay content with just the font-size setting
+  local overlayContent = string.format("font-size = %d\n", fontSize)
+
+  -- Write overlay config
+  local file = io.open(overlayPath, "w")
+  if not file then
+    log.e(string.format("Cannot write Ghostty config overlay: %s", overlayPath))
+    return
+  end
+
+  file:write(overlayContent)
+  file:close()
+
+  log.i(string.format("Updated font-size in overlay: %s", overlayPath))
+
+  -- Send reload_config command to Ghostty (affects all splits/tabs/windows)
+  local windows = ghostty:allWindows()
+  if not windows or #windows == 0 then
+    log.w("No Ghostty windows found to send reload command")
+    return
+  end
+
+  -- Remember currently focused window
+  local currentlyFocused = hs.window.focusedWindow()
+
+  -- Focus any Ghostty window and send reload command
+  windows[1]:focus()
+  hs.timer.usleep(20000)  -- 20ms
+
+  -- Send ctrl+a>r (reload_config)
+  hs.eventtap.keyStroke({"ctrl"}, "a", 0, ghostty)
+  hs.timer.usleep(50000)  -- 50ms
+  hs.eventtap.keyStroke({}, "r", 0, ghostty)
+
+  -- Restore focus
+  if currentlyFocused and currentlyFocused:isVisible() then
+    currentlyFocused:focus()
+  end
+
+  log.i("Sent reload_config to Ghostty - all splits/tabs/windows updated")
+end
+
 --- Handle screen configuration changes
 -- Called when display configuration changes or system wakes from sleep
 -- Determines which displays are active and applies appropriate font size
@@ -532,10 +598,14 @@ local function screenChanged()
     -- External monitor connected (use larger font for external or dual display)
     log.i(string.format("Using larger font size %d for external monitor", config.fontSizeWithMonitor))
     updateJetBrainsIDEFontSize(config.fontSizeWithMonitor)
+    log.i(string.format("Using larger Ghostty font size %d for external monitor", config.ghosttyFontSizeWithMonitor))
+    updateGhosttyFontSize(config.ghosttyFontSizeWithMonitor)
   else
     -- Only built-in display
     log.i(string.format("Using smaller font size %d for built-in display", config.fontSizeWithoutMonitor))
     updateJetBrainsIDEFontSize(config.fontSizeWithoutMonitor)
+    log.i(string.format("Using smaller Ghostty font size %d for built-in display", config.ghosttyFontSizeWithoutMonitor))
+    updateGhosttyFontSize(config.ghosttyFontSizeWithoutMonitor)
   end
 end
 
@@ -694,7 +764,7 @@ function showConfigUI()
     local checkedAttr = isChecked and ' checked="checked"' or ''
     local escapedPattern = pattern:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;"):gsub('"', "&quot;")
     defaultCheckboxesHtml = defaultCheckboxesHtml .. string.format(
-      '<td><input type="checkbox" class="default-ide" value="%s"%s></td>',
+      '<td><input type="checkbox" class="default-ide" value="%s"%s><span class="custom-checkbox"></span></td>',
       escapedPattern, checkedAttr
     )
   end
@@ -764,8 +834,7 @@ function showConfigUI()
       background: white;
       padding: 35px 40px 30px 40px;
       border-radius: 10px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-      border: 1px solid #bbb;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
       margin: 40px;
     }
     .settings-row {
@@ -782,7 +851,7 @@ function showConfigUI()
       margin-bottom: 25px;
       color: #333;
       font-size: 28px;
-      border-bottom: 3px solid #007AFF;
+      border-bottom: 3px solid #1ABC9C;
       padding-bottom: 15px;
     }
     h3 {
@@ -804,15 +873,17 @@ function showConfigUI()
     }
     input[type="number"], input[type="text"] {
       width: 100%%;
-      padding: 12px 14px;
+      height: 44px;
+      padding: 0 14px;
       border: 1px solid #ddd;
       border-radius: 6px;
-      font-size: 15px;
+      font-size: 18px;
+      text-align: center;
+      font-family: 'Menlo', 'Consolas', 'Courier New', monospace;
     }
     input:focus {
       outline: none;
-      border-color: #007AFF;
-      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+      border-color: #1ABC9C;
     }
     .checkbox-wrapper {
       display: flex;
@@ -821,19 +892,48 @@ function showConfigUI()
       padding: 12px 14px;
       border: 1px solid #ddd;
       border-radius: 6px;
-      background: #f8f9fa;
+      background: white;
       cursor: pointer;
-      transition: all 0.2s;
+      position: relative;
     }
     .checkbox-wrapper:hover {
-      background: #e9ecef;
-      border-color: #007AFF;
+      background: #f8f9fa;
     }
     .checkbox-wrapper input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      width: 0;
+      height: 0;
+    }
+    .checkbox-wrapper .custom-checkbox {
       width: 24px;
       height: 24px;
-      cursor: pointer;
-      margin: 0;
+      border: 2px solid #ccc;
+      border-radius: 4px;
+      background: white;
+      flex-shrink: 0;
+      position: relative;
+      transition: all 0.2s;
+    }
+    .checkbox-wrapper input[type="checkbox"]:checked + .custom-checkbox {
+      background: #1ABC9C;
+      border-color: #1ABC9C;
+    }
+    .checkbox-wrapper .custom-checkbox::after {
+      content: "";
+      position: absolute;
+      display: none;
+      left: 50%%;
+      top: 50%%;
+      width: 5px;
+      height: 10px;
+      border: solid white;
+      border-width: 0 2.5px 2.5px 0;
+      transform: translate(-50%%, -60%%) rotate(45deg);
+    }
+    .checkbox-wrapper input[type="checkbox"]:checked + .custom-checkbox::after {
+      display: block;
     }
     .checkbox-wrapper label {
       margin: 0;
@@ -842,16 +942,16 @@ function showConfigUI()
     }
     .ide-patterns-table {
       width: 100%%;
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 0;
       margin: 15px 0;
       background: white;
-      border: 1px solid #ddd;
       border-radius: 8px;
       overflow: hidden;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     .ide-patterns-table th {
-      background: #007AFF;
+      background: #1ABC9C;
       color: white;
       padding: 12px 10px;
       font-size: 14px;
@@ -861,7 +961,7 @@ function showConfigUI()
       white-space: nowrap;
     }
     .ide-patterns-table th:first-child {
-      background: #0051D5;
+      background: #16A085;
       min-width: 80px;
       font-size: 15px;
     }
@@ -875,6 +975,12 @@ function showConfigUI()
       border-right: 1px solid #eee;
       border-top: 1px solid #eee;
       background: white;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.15s ease;
+    }
+    .ide-patterns-table td:hover {
+      background: #f5f7fa;
     }
     .ide-patterns-table td:last-child {
       border-right: none;
@@ -923,10 +1029,41 @@ function showConfigUI()
       background: #E02020;
     }
     .ide-patterns-table input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      width: 0;
+      height: 0;
+    }
+    .ide-patterns-table .custom-checkbox {
       width: 20px;
       height: 20px;
+      border: 2px solid #ccc;
+      border-radius: 4px;
+      background: white;
+      display: inline-block;
+      position: relative;
+      transition: all 0.2s;
       cursor: pointer;
-      margin: 0;
+    }
+    .ide-patterns-table input[type="checkbox"]:checked + .custom-checkbox {
+      background: #1ABC9C;
+      border-color: #1ABC9C;
+    }
+    .ide-patterns-table .custom-checkbox::after {
+      content: "";
+      position: absolute;
+      display: none;
+      left: 50%%;
+      top: 50%%;
+      width: 4px;
+      height: 8px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: translate(-50%%, -60%%) rotate(45deg);
+    }
+    .ide-patterns-table input[type="checkbox"]:checked + .custom-checkbox::after {
+      display: block;
     }
     .add-custom-ide {
       display: flex;
@@ -938,7 +1075,7 @@ function showConfigUI()
     }
     button {
       padding: 12px 20px;
-      background: #007AFF;
+      background: #1ABC9C;
       color: white;
       border: none;
       border-radius: 6px;
@@ -950,10 +1087,10 @@ function showConfigUI()
       cursor: pointer;
     }
     button:hover {
-      background: #0051D5;
+      background: #16A085;
     }
     button:active {
-      background: #004FC4;
+      background: #148F77;
     }
     .ide-item button {
       padding: 8px 16px;
@@ -984,6 +1121,38 @@ function showConfigUI()
       font-size: 17px;
       font-weight: 600;
     }
+    .save-btn {
+      background: #1ABC9C;
+      position: relative;
+    }
+    .save-btn:hover {
+      background: #16A085;
+    }
+    .save-btn:active {
+      background: #148F77;
+    }
+    .save-btn.saving {
+      pointer-events: none;
+      opacity: 0.8;
+      color: transparent;
+    }
+    .save-btn.saving::after {
+      content: "";
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      top: 50%%;
+      left: 50%%;
+      margin-left: -8px;
+      margin-top: -8px;
+      border: 2px solid white;
+      border-top-color: transparent;
+      border-radius: 50%%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
     .cancel-btn {
       background: #8E8E93;
     }
@@ -1001,26 +1170,43 @@ function showConfigUI()
   <div class="container">
     <h2>Display Font Adjuster Configuration</h2>
 
-    <h3>Debug Settings</h3>
-    <div class="config-item">
-      <div class="checkbox-wrapper">
-        <input type="checkbox" id="debugMode" %s>
-        <label for="debugMode">Enable Debug Mode</label>
-      </div>
-      <div class="description">Shows verbose logging and startup alerts (requires reload)</div>
-    </div>
-
     <h3>Font Sizes</h3>
-    <div class="settings-row">
-      <div class="config-item">
-        <label>Font Size with External Monitor</label>
-        <input type="number" id="fontSizeWithMonitor" min="8" max="30" value="%d">
-        <div class="description">Larger font for external or dual display mode</div>
+    <div style="display: flex; gap: 40px; margin: 20px 0;">
+      <!-- JetBrains IDE Group -->
+      <div style="flex: 1;">
+        <div style="font-size: 15px; font-weight: 600; color: #333; margin-bottom: 20px;">JetBrains IDE</div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+          <!-- Built-in Display -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="font-size: 12px; color: #888; margin-bottom: 2px;">Built-in Display</div>
+            <input type="number" id="fontSizeWithoutMonitor" min="8" max="30" value="%d">
+          </div>
+          <!-- External Monitor -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="font-size: 12px; color: #888; margin-bottom: 2px;">External Monitor</div>
+            <input type="number" id="fontSizeWithMonitor" min="8" max="30" value="%d">
+          </div>
+        </div>
       </div>
-      <div class="config-item">
-        <label>Font Size without External Monitor</label>
-        <input type="number" id="fontSizeWithoutMonitor" min="8" max="30" value="%d">
-        <div class="description">Smaller font for built-in display only</div>
+
+      <!-- Vertical Separator -->
+      <div style="width: 1px; background: rgba(0,0,0,0.06);"></div>
+
+      <!-- Ghostty Terminal Group -->
+      <div style="flex: 1;">
+        <div style="font-size: 15px; font-weight: 600; color: #333; margin-bottom: 20px;">Ghostty Terminal</div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+          <!-- Built-in Display -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="font-size: 12px; color: #888; margin-bottom: 2px;">Built-in Display</div>
+            <input type="number" id="ghosttyFontSizeWithoutMonitor" min="8" max="30" value="%d">
+          </div>
+          <!-- External Monitor -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="font-size: 12px; color: #888; margin-bottom: 2px;">External Monitor</div>
+            <input type="number" id="ghosttyFontSizeWithMonitor" min="8" max="30" value="%d">
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1057,15 +1243,55 @@ function showConfigUI()
         <input type="number" id="pollIntervalSeconds" min="1" max="60" step="1" value="%.1f">
         <div class="description">How often to check for display changes (fallback)</div>
       </div>
+      <div class="config-item">
+        <label>Ghostty Config Overlay Path</label>
+        <input type="text" id="ghosttyConfigOverlayPath" value="%s">
+        <div class="description">Path to Ghostty config overlay file (writable)</div>
+      </div>
+      <div class="config-item">
+        <label>Debug Mode</label>
+        <div class="checkbox-wrapper">
+          <input type="checkbox" id="debugMode" %s>
+          <span class="custom-checkbox"></span>
+          <label for="debugMode">Enable Debug Mode</label>
+        </div>
+        <div class="description">Shows verbose logging and startup alerts (requires reload)</div>
+      </div>
     </div>
 
     <div class="buttons">
       <button class="cancel-btn" onclick="cancel()">Cancel</button>
-      <button onclick="saveConfig()">Save Configuration</button>
+      <button class="save-btn" id="saveBtn" onclick="saveConfig()">Save</button>
     </div>
   </div>
 
   <script>
+    // Get home directory from environment
+    const HOME_DIR = '%s';
+
+    // Path helper functions
+    function replaceHomeWithTilde(path) {
+      if (path && path.startsWith(HOME_DIR)) {
+        return '~' + path.substring(HOME_DIR.length);
+      }
+      return path;
+    }
+
+    function expandTildeToHome(path) {
+      if (path && path.startsWith('~')) {
+        return HOME_DIR + path.substring(1);
+      }
+      return path;
+    }
+
+    // Initialize display with tilde in path
+    window.addEventListener('DOMContentLoaded', function() {
+      const pathInput = document.getElementById('ghosttyConfigOverlayPath');
+      if (pathInput) {
+        pathInput.value = replaceHomeWithTilde(pathInput.value);
+      }
+    });
+
     // Communication bridge with Hammerspoon
     function removeCustomIDE(pattern) {
       const tbody = document.getElementById('idePatternsBody');
@@ -1192,6 +1418,10 @@ function showConfigUI()
     }
 
     function saveConfig() {
+      // Add saving animation
+      const saveBtn = document.getElementById('saveBtn');
+      saveBtn.classList.add('saving');
+
       const idePatterns = [];
 
       // Get checked default patterns
@@ -1212,6 +1442,9 @@ function showConfigUI()
         debugMode: document.getElementById('debugMode').checked,
         fontSizeWithMonitor: parseInt(document.getElementById('fontSizeWithMonitor').value),
         fontSizeWithoutMonitor: parseInt(document.getElementById('fontSizeWithoutMonitor').value),
+        ghosttyFontSizeWithMonitor: parseInt(document.getElementById('ghosttyFontSizeWithMonitor').value),
+        ghosttyFontSizeWithoutMonitor: parseInt(document.getElementById('ghosttyFontSizeWithoutMonitor').value),
+        ghosttyConfigOverlayPath: expandTildeToHome(document.getElementById('ghosttyConfigOverlayPath').value),
         idePatterns: idePatterns,
         wakeDelaySeconds: parseFloat(document.getElementById('wakeDelaySeconds').value),
         pollIntervalSeconds: parseFloat(document.getElementById('pollIntervalSeconds').value)
@@ -1228,25 +1461,62 @@ function showConfigUI()
         type: 'close'
       };
     }
+
+    // Make table cells with checkboxes clickable
+    document.addEventListener('DOMContentLoaded', function() {
+      // Handle custom checkbox wrappers
+      const checkboxWrappers = document.querySelectorAll('.checkbox-wrapper');
+      checkboxWrappers.forEach(wrapper => {
+        wrapper.addEventListener('click', function(e) {
+          // Only toggle if not clicking on the label or checkbox itself
+          if (e.target === wrapper || e.target.classList.contains('custom-checkbox')) {
+            const checkbox = wrapper.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+              checkbox.checked = !checkbox.checked;
+            }
+          }
+        });
+      });
+
+      // Handle IDE patterns table checkboxes
+      const table = document.querySelector('.ide-patterns-table');
+      if (table) {
+        table.addEventListener('click', function(e) {
+          const td = e.target.closest('td');
+          if (td && td.querySelector('input[type="checkbox"]')) {
+            const checkbox = td.querySelector('input[type="checkbox"]');
+            // Don't toggle if the click was directly on the checkbox
+            if (e.target !== checkbox) {
+              checkbox.checked = !checkbox.checked;
+            }
+          }
+        });
+      }
+    });
   </script>
 </body>
 </html>
   ]],
-    config.debugMode and 'checked="checked"' or '',
-    config.fontSizeWithMonitor,
     config.fontSizeWithoutMonitor,
+    config.fontSizeWithMonitor,
+    config.ghosttyFontSizeWithoutMonitor,
+    config.ghosttyFontSizeWithMonitor,
     defaultHeadersHtml,
     defaultCheckboxesHtml,
     customPatternsHtml,
     config.wakeDelaySeconds,
-    config.pollIntervalSeconds
+    config.pollIntervalSeconds,
+    config.ghosttyConfigOverlayPath,
+    config.debugMode and 'checked="checked"' or '',
+    os.getenv("HOME")
   )
 
   -- Calculate window size based on screen (centered)
   local screen = hs.screen.mainScreen()
   local screenFrame = screen:frame()
   local windowWidth = 1350  -- Fit all IDE patterns comfortably
-  local windowHeight = 920  -- Fixed height to show all content without scroll
+  -- Dynamic height: use 90% of screen height or 1100px, whichever is smaller
+  local windowHeight = math.min(math.floor(screenFrame.h * 0.90), 1100)
   -- Center on screen (account for screen origin)
   local windowX = screenFrame.x + math.floor((screenFrame.w - windowWidth) / 2)
   local windowY = screenFrame.y + math.floor((screenFrame.h - windowHeight) / 2)
@@ -1296,14 +1566,18 @@ function showConfigUI()
         log.i("Save button clicked")
         local newConfig = action.data
 
-        log.i(string.format("New config: fontWithMonitor=%d, fontWithout=%d, debugMode=%s",
+        log.i(string.format("New config: fontWithMonitor=%d, fontWithout=%d, ghosttyWithMonitor=%d, ghosttyWithout=%d, debugMode=%s",
           newConfig.fontSizeWithMonitor, newConfig.fontSizeWithoutMonitor,
+          newConfig.ghosttyFontSizeWithMonitor, newConfig.ghosttyFontSizeWithoutMonitor,
           tostring(newConfig.debugMode)))
 
         -- Update config with new values
         config.debugMode = newConfig.debugMode
         config.fontSizeWithMonitor = newConfig.fontSizeWithMonitor
         config.fontSizeWithoutMonitor = newConfig.fontSizeWithoutMonitor
+        config.ghosttyFontSizeWithMonitor = newConfig.ghosttyFontSizeWithMonitor
+        config.ghosttyFontSizeWithoutMonitor = newConfig.ghosttyFontSizeWithoutMonitor
+        config.ghosttyConfigOverlayPath = newConfig.ghosttyConfigOverlayPath
         config.idePatterns = newConfig.idePatterns
         config.wakeDelaySeconds = newConfig.wakeDelaySeconds
         config.pollIntervalSeconds = newConfig.pollIntervalSeconds

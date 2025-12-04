@@ -75,6 +75,10 @@ in
       # Theme
       theme = "Monokai Classic";
 
+      # Optional local config overlay (writable, for runtime modifications like font-size)
+      # Hammerspoon can modify this file to override settings without touching Nix config
+      config-file = "?~/.config/ghostty/config.local";
+
       # Keybindings (list format required for duplicate keys)
       # Using Ctrl+a as prefix (tmux-like)
       keybind = [
@@ -102,6 +106,12 @@ in
         "ctrl+a>l=goto_split:right"
         "ctrl+a>j=goto_split:down"
         "ctrl+a>k=goto_split:up"
+
+        # Navigate splits with Alt+arrows (quick navigation)
+        "alt+left=goto_split:left"
+        "alt+right=goto_split:right"
+        "alt+up=goto_split:up"
+        "alt+down=goto_split:down"
 
         # Resize splits (Ctrl+a then H/J/K/L)
         "ctrl+a>shift+h=resize_split:left,50"
