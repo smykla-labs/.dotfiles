@@ -461,7 +461,12 @@ local function updateJetBrainsIDEFontSize(fontSize)
 
     for _, app in ipairs(runningApps) do
       local appName = app:name()
-      local appPath = app:path()
+
+      -- Safely get app path - some system processes don't have valid bundles
+      local success, appPath = pcall(function() return app:path() end)
+      if not success then
+        appPath = nil
+      end
 
       -- Check if this is a JetBrains IDE
       -- Filter: must be in Applications and have exact IDE name (not system services)
