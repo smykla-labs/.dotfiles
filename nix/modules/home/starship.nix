@@ -62,7 +62,8 @@
       };
 
       docker_context = {
-        symbol = " ";
+        symbol = "";
+
         style = "bg:#06969A";
         format = "[ $symbol $context ]($style)";
       };
