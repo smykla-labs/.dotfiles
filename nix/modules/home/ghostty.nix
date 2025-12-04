@@ -107,6 +107,12 @@ in
         "ctrl+a>j=goto_split:down"
         "ctrl+a>k=goto_split:up"
 
+        # Navigate splits with Alt+arrows (quick navigation)
+        "alt+left=goto_split:left"
+        "alt+right=goto_split:right"
+        "alt+up=goto_split:up"
+        "alt+down=goto_split:down"
+
         # Resize splits (Ctrl+a then H/J/K/L)
         "ctrl+a>shift+h=resize_split:left,50"
         "ctrl+a>shift+l=resize_split:right,50"
