@@ -133,11 +133,13 @@ static void updateEditorFontOptions(int fontSize) {
 }
 
 /**
- * Disable "Use color scheme font instead of the default" checkbox
- * Forces all schemes to use the application default font settings
+ * Update color scheme font sizes to match the target font size
+ * This allows "Use color scheme font instead of the default" to work
+ * while keeping font sizes consistent across display changes
+ * @param fontSize the font size to set
  */
-static void disableColorSchemeFonts() {
-    logDebug("Disabling color scheme fonts (forcing use of app defaults)")
+static void updateColorSchemeFonts(int fontSize) {
+    logDebug("Updating color scheme fonts to size: ${fontSize}")
 
     def editorColorsManager = EditorColorsManager.getInstance()
     if (!editorColorsManager) {
@@ -147,16 +149,19 @@ static void disableColorSchemeFonts() {
 
     int updatedCount = 0
 
-    // Disable color scheme font for all schemes
+    // Update font size for all color schemes
     editorColorsManager.allSchemes?.each { EditorColorsScheme scheme ->
         if (scheme && !scheme.readOnly) {
             try {
-                // Setting font preferences to null forces use of app default
-                scheme.fontPreferences = null
-                updatedCount++
-                logDebug("Disabled custom font for scheme: ${scheme.name}")
+                def fontPrefs = scheme.fontPreferences
+                if (fontPrefs) {
+                    def fontFamily = fontPrefs.fontFamily
+                    fontPrefs.setSize(fontFamily, fontSize as float)
+                    updatedCount++
+                    logDebug("Updated font size for scheme: ${scheme.name}")
+                }
             } catch (Exception ex) {
-                logError("Could not disable color scheme font for ${scheme.name}: ${ex.message}")
+                logError("Could not update color scheme font for ${scheme.name}: ${ex.message}")
             }
         }
     }
@@ -165,15 +170,19 @@ static void disableColorSchemeFonts() {
     def globalScheme = editorColorsManager.globalScheme
     if (globalScheme && !globalScheme.readOnly) {
         try {
-            globalScheme.fontPreferences = null
-            updatedCount++
-            logDebug("Disabled custom font for global scheme")
+            def fontPrefs = globalScheme.fontPreferences
+            if (fontPrefs) {
+                def fontFamily = fontPrefs.fontFamily
+                fontPrefs.setSize(fontFamily, fontSize as float)
+                updatedCount++
+                logDebug("Updated font size for global scheme")
+            }
         } catch (Exception ex) {
-            logError("Could not disable color scheme font for global scheme: ${ex.message}")
+            logError("Could not update color scheme font for global scheme: ${ex.message}")
         }
     }
 
-    logDebug("Disabled custom fonts for ${updatedCount} color scheme(s)")
+    logDebug("Updated font size for ${updatedCount} color scheme(s)")
 }
 
 /**
@@ -248,7 +257,7 @@ static void updateFontSizes() {
 
     try {
         updateEditorFontOptions(fontSize)
-        disableColorSchemeFonts()
+        updateColorSchemeFonts(fontSize)
         updateUIFontSettings(fontSize)
         refreshUIAndEditors()
 
