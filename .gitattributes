@@ -1,4 +1,4 @@
-# Age-encrypted files (non-chezmoi managed)
+# Age-encrypted files (git filter managed)
 secrets/** filter=age diff=age
 autoload_scripts/**/*.secret.sh filter=age diff=age
 autoload_scripts/**/*.secret.bash filter=age diff=age
