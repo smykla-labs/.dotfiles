@@ -14,12 +14,12 @@
 
       format = lib.concatStrings [
         "$directory"
-        "[](fg:#9A348E bg:#DA627D)"
+        "[](fg:#9A348E bg:#DA627D)"
         "$git_branch"
         "$git_status"
-        "[](fg:#DA627D bg:#C47656)"
+        "[](fg:#DA627D bg:#C47656)"
         "$git_commit"
-        "[](fg:#C47656 bg:#86BBD8)"
+        "[](fg:#C47656 bg:#86BBD8)"
         "$c"
         "$elixir"
         "$elm"
@@ -32,11 +32,11 @@
         "$nim"
         "$rust"
         "$scala"
-        "[](fg:#86BBD8 bg:#06969A)"
+        "[](fg:#86BBD8 bg:#06969A)"
         "$docker_context"
-        "[](fg:#06969A bg:#33658A)"
+        "[](fg:#06969A bg:#33658A)"
         "$time"
-        "[ ](fg:#33658A)"
+        "[ ](fg:#33658A)"
       ];
 
       add_newline = false;
@@ -44,116 +44,116 @@
 
       directory = {
         style = "bg:#9A348E";
-        format = "[ $path ]($style)";
+        format = "[ $path]($style)";
         truncation_length = 3;
         truncation_symbol = "…/";
         substitutions = {
           "Documents" = "󰈙 ";
-          "Downloads" = " ";
-          "Music" = " ";
-          "Pictures" = " ";
+          "Downloads" = " ";
+          "Music" = " ";
+          "Pictures" = " ";
         };
       };
 
       c = {
-        symbol = "";
+        symbol = "";
         style = "bg:#86BBD8";
-        format = "[ $symbol ($version) ]($style)";
+        format = "[ $symbol($version)]($style)";
       };
 
       docker_context = {
-        symbol = " ";
+        symbol = " ";
         style = "bg:#06969A";
-        format = "[ $symbol $context ]($style)";
+        format = "[ $symbol $context]($style)";
       };
 
       elixir = {
-        symbol = "";
+        symbol = "";
         style = "bg:#86BBD8";
-        format = "[ $symbol ($version) ]($style)";
+        format = "[ $symbol($version)]($style)";
       };
 
       elm = {
-        symbol = "";
+        symbol = "";
         style = "bg:#86BBD8";
-        format = "[ $symbol ($version) ]($style)";
+        format = "[ $symbol($version)]($style)";
       };
 
       git_branch = {
-        symbol = "";
+        symbol = "";
         style = "bg:#DA627D";
-        format = "[ $symbol $branch ]($style)";
+        format = "[ $symbol $branch]($style)";
       };
 
       git_status = {
         style = "bg:#DA627D";
-        format = "[$all_status$ahead_behind ]($style)";
+        format = "[$all_status$ahead_behind]($style)";
       };
 
       git_commit = {
         style = "bg:#C47656";
-        format = "[  $hash$tag ]($style)";
+        format = "[ $hash$tag]($style)";
         only_detached = false;
       };
 
       golang = {
-        symbol = "";
+        symbol = "";
         style = "bg:#86BBD8";
-        format = "[ $symbol ($version) ]($style)";
+        format = "[ $symbol($version)]($style)";
       };
 
       gradle = {
         style = "bg:#86BBD8";
-        format = "[ $symbol ($version) ]($style)";
+        format = "[ $symbol($version)]($style)";
       };
 
       haskell = {
-        symbol = "";
+        symbol = "";
         style = "bg:#86BBD8";
-        format = "[ $symbol ($version) ]($style)";
+        format = "[ $symbol($version)]($style)";
       };
 
       java = {
-        symbol = "";
+        symbol = "";
         style = "bg:#86BBD8";
-        format = "[ $symbol ($version) ]($style)";
+        format = "[ $symbol($version)]($style)";
       };
 
       julia = {
-        symbol = "";
+        symbol = "";
         style = "bg:#86BBD8";
-        format = "[ $symbol ($version) ]($style)";
+        format = "[ $symbol($version)]($style)";
       };
 
       nodejs = {
-        symbol = "";
+        symbol = "";
         style = "bg:#86BBD8";
-        format = "[ $symbol ($version) ]($style)";
+        format = "[ $symbol($version)]($style)";
       };
 
       nim = {
         symbol = "󰆥";
         style = "bg:#86BBD8";
-        format = "[ $symbol ($version) ]($style)";
+        format = "[ $symbol($version)]($style)";
       };
 
       rust = {
-        symbol = "";
+        symbol = "";
         style = "bg:#86BBD8";
-        format = "[ $symbol ($version) ]($style)";
+        format = "[ $symbol($version)]($style)";
       };
 
       scala = {
-        symbol = "";
+        symbol = "";
         style = "bg:#86BBD8";
-        format = "[ $symbol ($version) ]($style)";
+        format = "[ $symbol($version)]($style)";
       };
 
       time = {
         disabled = true;
         time_format = "%R";
         style = "bg:#33658A";
-        format = "[ ♥ $time ]($style)";
+        format = "[ ♥ $time]($style)";
       };
     };
   };
