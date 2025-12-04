@@ -542,6 +542,7 @@ Describe 'Bootstrap Script'
             When run bash "${BOOTSTRAP_SCRIPT}" --yes --help
             The status should be success
             The output should include "Bootstrap script for bartsmykla's dotfiles"
+            The stderr should be present
         End
 
         It 'accepts email from --email flag with --yes'
@@ -550,6 +551,7 @@ Describe 'Bootstrap Script'
             When run bash "${BOOTSTRAP_SCRIPT}" --yes --email "test@example.com" --help
             The status should be success
             The output should include "Bootstrap script for bartsmykla's dotfiles"
+            The stderr should be present
         End
     End
 
