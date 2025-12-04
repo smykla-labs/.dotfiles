@@ -1497,8 +1497,8 @@ function showConfigUI()
 </html>
   ]],
     config.fontSizeWithoutMonitor,
-    config.ghosttyFontSizeWithoutMonitor,
     config.fontSizeWithMonitor,
+    config.ghosttyFontSizeWithoutMonitor,
     config.ghosttyFontSizeWithMonitor,
     defaultHeadersHtml,
     defaultCheckboxesHtml,
