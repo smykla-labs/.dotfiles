@@ -9,4 +9,3 @@ helper_scripts/**/*.secret.zsh filter=age diff=age
 todos/**/* filter=age diff=age
 ansible/**/* filter=age diff=age
 helpers/**/*.secret.* filter=age diff=age
-CLAUDE.md filter=age diff=age

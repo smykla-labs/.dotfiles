@@ -1,241 +1,299 @@
------BEGIN AGE ENCRYPTED FILE-----
-YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBxbkZJbXFFUmZoSkFVU0JO
-RWVPL0U5dG1uTXlqbm00L1RRZ0J1cGphNGdBCi9pczRONVVvNDFXQTc0NktkVnl6
-a2dqbTRpZ3pkWncyaDBRc1B0Y25RVTgKLT4gWDI1NTE5IHNob0xLTVF4bXFGRDBW
-c2ZHbEV3dGg5b0hrTmFHWDZEZDJOd0psbDJ0QzQKVW1BVkJFdDZjbUlNNm1kam16
-YTlCTEFHaEdwREk3VWhTNFowanMzRGxkcwotLS0gNm82R3NCMlltRGpjOHFWNE9X
-THFwVHFaV1RkdlZSSmk2bGV4WldKc1dHcwpmWwHXgk0UEz3TJIb8zbtwaUQo15qZ
-xCjTG3/x/OheTXxs9babl4hP4Amci9Fv7hSAHsC4KBL/jTdhPly8/Uz035UnseBh
-RsgfbD4STy47xKq4nOsQ4CdzJIeNvJmeJaSr9ktIdQonqxWgrsDFVZIjI2bQAWjR
-yoBA0Mp94PwOspiPMKNkqu8FSl1doctnwz3OiRIwhM3MBnsjwjuqfRPTLdDZ9V/Z
-VFsafE9rMqt5KdLDZrvg8sX0ZwxFCy4pHjQFDYNsfOSHyDaBvbO6wJOO8ucf8tcB
-CVE3QI8hK4HaS3B2Paygbaa2+LySZ8537q8DYf8ZRSowCUFRASQXbH6eQ+bOnUoP
-xN4AEOfKLgToq7Fql1NuBaOKibL7N8fbUse7GnQSAPhouay+RIl+udOi8ROg6ZnK
-QtBSlYGhSLXRLD5SQS5LngkAaoTEUcyaV+/3uydXSudlSI227gFNx/MTGjmqHd/q
-2CkDBDdyNgfqA+bFvqtmXHrnFmczt5ahZ2ZHengxwrDWU5vkq/fTE0Se0bpQpwng
-TacJqdlc3EW6MCYpYGGmtL5fmVMJmoWZW70EDEqIjDRIA6BW2ONiRrH0mm8aYLPv
-9pYRDPQIdp3ilVl2uCmwbsSHU/DCumj90ZwaayxfffFPq3D11nhr/q3oSYjI4ZmB
-5UmRT8aMmfJ3UjyXMMHFWz+lNBkpLuE7mQHmY1cnMOYegmuPL0/q8DU5E9+a+1F4
-mCIeg8pjiHGwh12n7cThLrLRwhXIFRjOUG6hFEHzatg79g+EtUar9GXtjrWaldyu
-+zZNln1bTIDtFYxHiHhkfUG9mKLvcLozUnX5670xuq6lsvNWvt/3tT3ZkZbph0er
-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
------END AGE ENCRYPTED FILE-----
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Repository Overview
+
+Personal macOS dotfiles managed with:
+
+- **[Nix](https://nixos.org/)**: Package management and system configuration
+- **[Home Manager](https://github.com/nix-community/home-manager)**: User environment management
+- **[nix-darwin](https://github.com/LnL7/nix-darwin)**: macOS system configuration
+- **[sops-nix](https://github.com/Mic92/sops-nix)**: Secrets management
+- **[age](https://age-encryption.org/)**: File encryption
+- **[Taskfile](https://taskfile.dev)**: Task automation
+- **[mise](https://mise.jdx.dev/)**: Tool version management
+
+## Repository Structure
+
+```text
+.dotfiles/
+├── nix/                       # Nix configuration
+│   ├── flake.nix              # Flake entry point
+│   ├── flake.lock             # Locked dependencies
+│   ├── modules/               # Nix modules
+│   │   ├── darwin/            # nix-darwin modules (system-level)
+│   │   └── home/              # home-manager modules (user-level)
+│   └── secrets/               # sops-nix encrypted secrets
+│       ├── .sops.yaml         # sops configuration
+│       └── secrets.yaml       # Encrypted secrets
+├── .github/workflows/         # CI/CD
+│   ├── codeql.yaml            # CodeQL security analysis
+│   ├── scorecards.yaml        # OpenSSF Scorecard
+│   └── test.yaml              # Test pipeline (Ubuntu + macOS)
+├── hooks/                     # Git hooks (NOT Claude Code hooks)
+│   ├── pre-commit             # Runs 'task lint'
+│   └── pre-push               # Runs 'task test'
+├── tmp/                       # Temporary files (NEVER commit)
+├── Taskfile.yaml              # Task automation (test, lint, hooks, etc.)
+├── Brewfile                   # Homebrew packages (legacy, migrating to nix)
+├── SECURITY.md                # Security policy and vulnerability reporting
+├── CLAUDE.md                  # This file
+├── secrets/                   # Encrypted secrets (via git filter)
+└── todos/                     # Personal todos (encrypted via git filter)
+```
+
+## Nix
+
+### Rebuild Commands
+
+- **Home Manager** (user config):
+
+  ```bash
+  home-manager switch --flake $DOTFILES_PATH/nix#home-bart
+  ```
+
+- **Darwin** (system config, requires `sudo`):
+
+  ```bash
+  sudo darwin-rebuild switch --flake $DOTFILES_PATH/nix#bartsmykla
+  ```
+
+### Key Concepts
+
+- **Flake**: Entry point at `nix/flake.nix`, defines inputs and outputs
+- **Home Manager modules**: User-level config in `nix/modules/home/`
+- **Darwin modules**: System-level config in `nix/modules/darwin/`
+- **Secrets**: Managed via sops-nix in `nix/secrets/`
+
+### Editing Secrets
+
+```bash
+SOPS_AGE_KEY_FILE=~/.config/chezmoi/key.txt sops nix/secrets/secrets.yaml
+```
+
+## Age Encryption
+
+Encryption using age for repository files:
+
+- **Key location**: `~/.config/chezmoi/key.txt` (never commit)
+- **Repository files**: Encrypted via git clean/smudge filters
+
+Encrypted file patterns (`.gitattributes`):
+
+- `secrets/**`
+- `todos/**`
+- `**/**.secret.*` files
+
+**Important**: When committing encrypted files, never leak actual content in commit messages.
+
+## Development Workflow
+
+### Making Changes
+
+1. Create feature branch: `git checkout -b <type>/<description>`
+2. Edit nix modules in `nix/modules/`
+3. Test changes: `task test && task lint`
+4. Apply changes:
+   - User config: `home-manager switch --flake $DOTFILES_PATH/nix#home-bart`
+   - System config: `sudo darwin-rebuild switch --flake $DOTFILES_PATH/nix#bartsmykla`
+5. Commit changes: `git commit -sS -m "type(scope): description"`
+6. Push to remote: `git push upstream <branch-name>`
+7. Create pull request and self-review before merging
+
+### Taskfile Commands
+
+Use `task` for common operations:
+
+```bash
+task test          # Run all tests
+task lint          # Run all linters (shellcheck, markdownlint, etc.)
+task check         # Alias for lint
+
+task test:fish     # Test Fish config syntax
+task lint:shell    # Shellcheck validation
+task lint:markdown # Markdown linting
+task lint:taskfile # Validate Taskfile.yaml
+
+task --list        # Show all available tasks
+```
+
+### Testing
+
+All changes must pass automated tests:
+
+- **Fish scripts**: Syntax validation (`fish -n`)
+- **Shell scripts**: Shellcheck linting
+- **Markdown**: Markdownlint validation
+- **Taskfile**: JSON schema validation
+
+CI runs on every push (Ubuntu 24.04 and macOS 15).
+
+See [TESTING.md](TESTING.md) for comprehensive documentation.
+
+## Shell Environment
+
+**Shell**: Fish shell (version 3.x)
+
+**Key environment variables**:
+
+- `$PROJECTS_PATH` - `$HOME/Projects/github.com`
+- `$MY_PROJECTS_PATH` - `$PROJECTS_PATH/bartsmykla`
+- `$DOTFILES_PATH` - `$PROJECTS_PATH/smykla-labs/.dotfiles`
+- `$SECRETS_PATH` - `$DOTFILES_PATH/secrets`
+
+## Tool Management
+
+Tools managed via nix (see `nix/modules/home/` for package lists).
+
+Additional tools via mise for development:
+
+```bash
+mise use <tool>@<version>    # Pin specific version
+mise install                 # Install tools
+```
+
+## Fish Functions
+
+Custom Fish functions (managed via nix home-manager):
+
+- **`git_clone_to_projects`** - Clone repos to `$PROJECTS_PATH/{org}/{repo}`
+- **`git-checkout-default-fetch-fast-forward`** - Checkout, fetch, and fast-forward default branch
+- **`git-push-upstream-first-force-with-lease`** - Push to upstream with `--force-with-lease`
+- **`klg`** - Kubernetes pod logs
+- **`kls`** - List Kubernetes resources
+- **`mkd`** - Create directory and cd into it
+- **`git_clean_branches`** - Clean merged local branches without remote counterpart
+
+All functions should have `--description` or `-d` flag.
+
+## Integrations
+
+- **fzf**: Fuzzy finder for directories, git log/status, processes, variables
+- **Atuin**: Shell history sync and search
+- **direnv**: Auto-load environment from `.envrc`
+- **starship**: Cross-shell prompt
+- **jump**: Directory navigation
+- **1Password**: SSH agent (`$SSH_AUTH_SOCK`)
+
+## Plugin Management
+
+**Vim plugins** (Vundle):
+
+- **Config**: Managed via nix home-manager
+- **Plugins**: Installed via `vim +PluginInstall +qall`
+- **Location**: `~/.vim/bundle/`
+
+**Tmux plugins** (TPM):
+
+- **Config**: Managed via nix home-manager
+- **Plugins**: Installed via `<prefix> + I` inside tmux session
+- **Location**: `~/.tmux/plugins/`
+
+**Claude Code plugins**:
+
+- **Config**: Managed via sops-nix secrets
+- **Marketplaces**: Managed by Claude Code, auto-synced
+- **Location**: `~/.claude/plugins/marketplaces/`
+
+## Claude Code Hooks
+
+Automated validation using dispatcher pattern: `~/.claude/hooks/dispatcher.sh` routes PreToolUse/PostToolUse events to specialized validators.
+
+### Locations
+
+- **Deployed**: `~/.claude/hooks/` (runtime location)
+- **Logs**: `~/.claude/hooks/dispatcher.log`
+
+### Available Validators
+
+**Git Operations (PreToolUse):**
+
+- `validate-git-add.sh` - Blocks `tmp/` files from staging
+- `validate-commit.sh` - Conventional commits, 50/72 rule, empty line before lists, `-sS` flags
+- `validate-git-push.sh` - Project-specific push rules
+- `validate-branch-name.sh` - Branch naming conventions
+- `validate-pr.sh` - PR creation validation
+
+**File Operations (PostToolUse):**
+
+- `validate-shellscript.sh` - Shellcheck on `*.sh`, `*.bash`
+- `validate-markdown.sh` - Markdown formatting, empty lines before lists
+
+### Debugging
+
+```bash
+export CLAUDE_HOOKS_DEBUG=true    # Enable logging
+export CLAUDE_HOOKS_TRACE=true    # Verbose trace
+tail -f ~/.claude/hooks/dispatcher.log
+```
+
+## Git Workflow
+
+- **Branch-based development**: All changes must go through pull requests
+  - Create feature branches for all work: `git checkout -b <type>/<description>`
+  - Branch naming: descriptive, kebab-case (e.g., `feat/add-new-function`, `fix/shell-syntax`)
+  - Push to remote and create PR for review
+  - Self-review PRs before merging to ensure quality
+- **Signing**: All commits must use `-sS` flags (sign-off + GPG)
+- **Commit format**: Conventional commits (`type(scope): description`)
+- **Pushing**: Wait for explicit instruction before pushing to remote
+- **Remotes**: `upstream` (main repo), `origin` (fork)
+- **Merging**: Use GitHub UI to merge PRs after CI passes and self-review completes
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed commit guidelines.
+
+### Git Hooks
+
+Automated quality checks via git hooks:
+
+- **Installation**: Run `task hooks:install` to set up hooks
+- **pre-commit**: Runs `task lint` before each commit
+- **pre-push**: Runs `task test` before each push
+- **Bypass**: Use `--no-verify` flag when needed
+- **Location**: Source files in `hooks/`, installed to `.git/hooks/`
+
+Hooks ensure code quality and prevent broken code from being committed or pushed.
+
+## Writing Shell Scripts
+
+- **Linting**: Must pass `shellcheck` with no warnings
+  - Claude Code hooks automatically run shellcheck on write
+  - All hook scripts are validated before deployment
+- **Style**: Use long flags for readability (`--force` not `-f`)
+- **Fish functions**: Add `--description` flag
+- **Secrets**: Files matching `**.secret.*` are encrypted
+
+## Homebrew Packages
+
+Core tools (from `Brewfile`, migrating to nix):
+
+- **Shell**: fish, bash, starship, atuin
+- **Dev**: docker, kubernetes-cli, k3d, k9s, helm, terraform
+- **Git**: gh
+- **Utils**: fzf, fd, eza, bat, jq, yq, direnv, jump
+- **Cloud**: awscli, gcloud, saml2aws
+- **Editors**: vim, tmux
+
+## Documentation
+
+- **[README.md](README.md)**: Project overview and quick start
+- **[TESTING.md](TESTING.md)**: Testing approach and commands
+- **[CONTRIBUTING.md](CONTRIBUTING.md)**: Contribution guidelines
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)**: Debugging and troubleshooting guide
+- **[SECURITY.md](SECURITY.md)**: Security policy and vulnerability reporting
+
+## Common Tasks
+
+Refer to documentation for detailed workflows:
+
+- **Development workflow**: See [CONTRIBUTING.md](CONTRIBUTING.md#development-workflow)
+- **Testing**: See [TESTING.md](TESTING.md)
+- **Troubleshooting**: See [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+
+## Security Notes
+
+- **Age key**: `~/.config/chezmoi/key.txt` is private, never commit
+- **Encrypted files**: Never expose actual content in commit messages
+- **Secrets**: Managed via sops-nix for nix configs, git filters for repo files
+- **Git filters**: Clean/smudge filters handle transparent encryption
