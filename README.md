@@ -117,16 +117,17 @@ Git hooks automate quality checks:
 
 ```text
 .dotfiles/
-├── chezmoi/                   # Chezmoi source (dotfiles)
-│   ├── .chezmoi.toml.tmpl     # Chezmoi config template
-│   └── private_dot_config/    # Maps to ~/.config/
-│       ├── fish/              # Fish shell
-│       └── mise/              # Tool versions
+├── nix/                       # Nix configuration
+│   ├── flake.nix              # Flake entry point
+│   ├── modules/               # Nix modules
+│   │   ├── darwin/            # nix-darwin system config
+│   │   └── home/              # home-manager user config
+│   └── secrets/               # sops-nix encrypted secrets
 ├── .github/workflows/         # CI/CD workflows
 ├── hooks/                     # Git hooks (pre-commit, pre-push)
 ├── spec/                      # ShellSpec tests
 ├── Taskfile.yaml              # Task automation
-└── Brewfile                   # Homebrew dependencies
+└── Brewfile                   # Homebrew dependencies (legacy)
 ```
 
 ## Core Tools

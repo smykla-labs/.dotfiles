@@ -34,8 +34,6 @@
   ],
   "ignorePaths": [
     "**/tmp/**",
-    "**/chezmoi/dot_vim/**",
-    "**/chezmoi/dot_tmux/**",
     "**/secrets/**",
     "**/todos/**",
     "**/knowledge/**"

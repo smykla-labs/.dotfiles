@@ -59,5 +59,5 @@ fish_function_exists() {
 # USAGE: fish_source_config
 #
 fish_source_config() {
-    fish -c "source ${DOTFILES_PATH}/chezmoi/private_dot_config/fish/config.fish"
+    fish -c "source ${HOME}/.config/fish/config.fish"
 }

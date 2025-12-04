@@ -69,7 +69,7 @@ Personal macOS dotfiles managed with:
 ### Editing Secrets
 
 ```bash
-SOPS_AGE_KEY_FILE=~/.config/chezmoi/key.txt sops nix/secrets/secrets.yaml
+SOPS_AGE_KEY_FILE=~/.config/age/key.txt sops nix/secrets/secrets.yaml
 ```
 
 ## Age Encryption
