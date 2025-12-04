@@ -1,9 +1,9 @@
 # Sops-nix secrets management for home-manager
 #
-# Uses the existing chezmoi age key for decryption.
+# Uses the age key for decryption.
 # Secrets are decrypted at activation time and stored in the user's runtime dir.
 #
-# Edit secrets: SOPS_AGE_KEY_FILE=~/.config/chezmoi/key.txt sops nix/secrets/secrets.yaml
+# Edit secrets: SOPS_AGE_KEY_FILE=~/.config/age/key.txt sops nix/secrets/secrets.yaml
 { config, lib, pkgs, ... }:
 
 {
@@ -11,8 +11,8 @@
   home.packages = [ pkgs.sops ];
 
   sops = {
-    # Use the existing chezmoi age key
-    age.keyFile = "${config.home.homeDirectory}/.config/chezmoi/key.txt";
+    # Use the age key for secrets decryption
+    age.keyFile = "${config.home.homeDirectory}/.config/age/key.txt";
 
     # Default secrets file location (relative to flake root)
     defaultSopsFile = ../../secrets/secrets.yaml;
