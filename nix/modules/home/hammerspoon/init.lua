@@ -1095,31 +1095,34 @@ function showConfigUI()
       <div class="description">Shows verbose logging and startup alerts (requires reload)</div>
     </div>
 
-    <h3>JetBrains Font Sizes</h3>
-    <div class="settings-row">
-      <div class="config-item">
-        <label>Font Size with External Monitor</label>
-        <input type="number" id="fontSizeWithMonitor" min="8" max="30" value="%d">
-        <div class="description">Larger font for external or dual display mode</div>
+    <h3>Font Sizes</h3>
+    <div class="settings-row" style="gap: 20px;">
+      <!-- Built-in Display Group -->
+      <div style="flex: 1; padding: 16px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
+        <div style="font-weight: 600; font-size: 15px; margin-bottom: 4px; color: #333;">Built-in Display</div>
+        <div style="font-size: 13px; color: #666; margin-bottom: 16px;">Without External Monitor</div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+          <label style="flex: 1; margin: 0;">JetBrains IDE</label>
+          <input type="number" id="fontSizeWithoutMonitor" min="8" max="30" value="%d" style="width: 70px;">
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <label style="flex: 1; margin: 0;">Ghostty Terminal</label>
+          <input type="number" id="ghosttyFontSizeWithoutMonitor" min="8" max="30" value="%d" style="width: 70px;">
+        </div>
       </div>
-      <div class="config-item">
-        <label>Font Size without External Monitor</label>
-        <input type="number" id="fontSizeWithoutMonitor" min="8" max="30" value="%d">
-        <div class="description">Smaller font for built-in display only</div>
-      </div>
-    </div>
 
-    <h3>Ghostty Font Sizes</h3>
-    <div class="settings-row">
-      <div class="config-item">
-        <label>Font Size with External Monitor</label>
-        <input type="number" id="ghosttyFontSizeWithMonitor" min="8" max="40" value="%d">
-        <div class="description">Larger font for external or dual display mode</div>
-      </div>
-      <div class="config-item">
-        <label>Font Size without External Monitor</label>
-        <input type="number" id="ghosttyFontSizeWithoutMonitor" min="8" max="40" value="%d">
-        <div class="description">Smaller font for built-in display only</div>
+      <!-- External Monitor Group -->
+      <div style="flex: 1; padding: 16px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
+        <div style="font-weight: 600; font-size: 15px; margin-bottom: 4px; color: #333;">External Monitor</div>
+        <div style="font-size: 13px; color: #666; margin-bottom: 16px;">With External Monitor</div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+          <label style="flex: 1; margin: 0;">JetBrains IDE</label>
+          <input type="number" id="fontSizeWithMonitor" min="8" max="30" value="%d" style="width: 70px;">
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <label style="flex: 1; margin: 0;">Ghostty Terminal</label>
+          <input type="number" id="ghosttyFontSizeWithMonitor" min="8" max="30" value="%d" style="width: 70px;">
+        </div>
       </div>
     </div>
 
@@ -1334,10 +1337,10 @@ function showConfigUI()
 </html>
   ]],
     config.debugMode and 'checked="checked"' or '',
-    config.fontSizeWithMonitor,
     config.fontSizeWithoutMonitor,
-    config.ghosttyFontSizeWithMonitor,
     config.ghosttyFontSizeWithoutMonitor,
+    config.fontSizeWithMonitor,
+    config.ghosttyFontSizeWithMonitor,
     defaultHeadersHtml,
     defaultCheckboxesHtml,
     customPatternsHtml,

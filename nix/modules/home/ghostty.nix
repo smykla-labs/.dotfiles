@@ -75,6 +75,10 @@ in
       # Theme
       theme = "Monokai Classic";
 
+      # Optional local config overlay (writable, for runtime modifications like font-size)
+      # Hammerspoon can modify this file to override settings without touching Nix config
+      config-file = "?~/.config/ghostty/config.local";
+
       # Keybindings (list format required for duplicate keys)
       # Using Ctrl+a as prefix (tmux-like)
       keybind = [
