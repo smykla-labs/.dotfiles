@@ -1565,14 +1565,18 @@ function showConfigUI()
         log.i("Save button clicked")
         local newConfig = action.data
 
-        log.i(string.format("New config: fontWithMonitor=%d, fontWithout=%d, debugMode=%s",
+        log.i(string.format("New config: fontWithMonitor=%d, fontWithout=%d, ghosttyWithMonitor=%d, ghosttyWithout=%d, debugMode=%s",
           newConfig.fontSizeWithMonitor, newConfig.fontSizeWithoutMonitor,
+          newConfig.ghosttyFontSizeWithMonitor, newConfig.ghosttyFontSizeWithoutMonitor,
           tostring(newConfig.debugMode)))
 
         -- Update config with new values
         config.debugMode = newConfig.debugMode
         config.fontSizeWithMonitor = newConfig.fontSizeWithMonitor
         config.fontSizeWithoutMonitor = newConfig.fontSizeWithoutMonitor
+        config.ghosttyFontSizeWithMonitor = newConfig.ghosttyFontSizeWithMonitor
+        config.ghosttyFontSizeWithoutMonitor = newConfig.ghosttyFontSizeWithoutMonitor
+        config.ghosttyConfigOverlayPath = newConfig.ghosttyConfigOverlayPath
         config.idePatterns = newConfig.idePatterns
         config.wakeDelaySeconds = newConfig.wakeDelaySeconds
         config.pollIntervalSeconds = newConfig.pollIntervalSeconds
