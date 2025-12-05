@@ -552,6 +552,48 @@ local function updateGhosttyWindowFont(window)
   return adjusted
 end
 
+--- Update all Ghostty windows with appropriate font sizes
+-- Groups windows by screen to optimize space-switching overhead
+local function updateAllGhosttyWindows()
+  -- Get all Ghostty windows across all spaces
+  local allWindows = hs.window.filter.new(false):setAppFilter('Ghostty'):getWindows()
+
+  if not allWindows or #allWindows == 0 then
+    log.d("No Ghostty windows found")
+    return
+  end
+
+  log.d(string.format("Updating %d Ghostty window(s)", #allWindows))
+
+  -- Group windows by screen name for optimization
+  local windowsByScreen = {}
+  for _, window in ipairs(allWindows) do
+    if window:isStandard() then
+      local screen = window:screen()
+      if screen then
+        local screenName = screen:name()
+        if not windowsByScreen[screenName] then
+          windowsByScreen[screenName] = {}
+        end
+        table.insert(windowsByScreen[screenName], window)
+      end
+    end
+  end
+
+  -- Update windows grouped by screen
+  local updateCount = 0
+  for screenName, windows in pairs(windowsByScreen) do
+    log.d(string.format("Processing %d window(s) on screen '%s'", #windows, screenName))
+    for _, window in ipairs(windows) do
+      if updateGhosttyWindowFont(window) then
+        updateCount = updateCount + 1
+      end
+    end
+  end
+
+  log.i(string.format("Updated %d/%d Ghostty window(s)", updateCount, #allWindows))
+end
+
 --- Update font size in a single other.xml file (creates if doesn't exist)
 -- @param xmlPath The full path to the other.xml file
 -- @param fontSize The font size to set (must be positive integer)
@@ -954,6 +996,35 @@ caffeineWatcher:start()
 -- Set up polling timer as fallback (detects changes that watcher might miss)
 -- This is especially important for monitor unplug events which can be missed
 pollTimer = hs.timer.doEvery(config.pollIntervalSeconds, pollScreens)
+
+-- Set up Ghostty window filter for per-window font sizing
+if ghosttyWindowFilter then
+  ghosttyWindowFilter:unsubscribeAll()
+  ghosttyWindowFilter = nil
+end
+
+ghosttyWindowFilter = hs.window.filter.new('Ghostty')
+  :subscribe(hs.window.filter.windowMoved, function(window, appName, event)
+    if config.ghosttyPerWindowFontSizing then
+      log.d(string.format("Window moved event for Ghostty window %d", window:id()))
+      updateGhosttyWindowFont(window)
+    end
+  end)
+  :subscribe(hs.window.filter.windowCreated, function(window, appName, event)
+    if config.ghosttyPerWindowFontSizing then
+      log.d(string.format("Window created event for Ghostty window %d", window:id()))
+      updateGhosttyWindowFont(window)
+    end
+  end)
+  :subscribe(hs.window.filter.windowDestroyed, function(window, appName, event)
+    if config.ghosttyPerWindowFontSizing then
+      local windowId = window:id()
+      log.d(string.format("Window destroyed event for Ghostty window %d", windowId))
+      ghosttyWindowStates[windowId] = nil
+    end
+  end)
+
+log.i("Ghostty window filter initialized")
 
 -- Initialize screen state tracking
 local allScreens = hs.screen.allScreens()
