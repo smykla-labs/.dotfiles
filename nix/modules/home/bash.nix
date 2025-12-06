@@ -18,10 +18,9 @@
       # Add ~/.local/bin to PATH for mise executable
       export PATH="$HOME/.local/bin:$PATH"
 
-      # For non-interactive shells, use mise hook-env instead of activate
-      # This sets up PATH and other environment variables immediately
+      # Activate mise for full functionality (directory-aware tools, shims, etc.)
       if command -v mise >/dev/null 2>&1; then
-          eval "$(mise hook-env -s bash)"
+          eval "$(mise activate bash)"
       fi
 
       # Source shared shell functions (from Fish functions)
