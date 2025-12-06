@@ -425,6 +425,61 @@ local function cleanupGhosttyWindowStates()
   end
 end
 
+--- Count elements with a specific role in the accessibility tree
+-- @param element AXUIElement to search
+-- @param targetRole Role to count (e.g., "AXTextArea", "AXTabGroup")
+-- @return number Count of elements with the target role
+local function countAXRole(element, targetRole)
+  if not element then return 0 end
+  local role = element:attributeValue("AXRole")
+  local count = (role == targetRole) and 1 or 0
+  local children = element:attributeValue("AXChildren") or {}
+  for _, child in ipairs(children) do
+    count = count + countAXRole(child, targetRole)
+  end
+  return count
+end
+
+--- Find first element with a specific role in the accessibility tree
+-- @param element AXUIElement to search
+-- @param targetRole Role to find
+-- @return AXUIElement or nil
+local function findAXElement(element, targetRole)
+  if not element then return nil end
+  local role = element:attributeValue("AXRole")
+  if role == targetRole then return element end
+  local children = element:attributeValue("AXChildren") or {}
+  for _, child in ipairs(children) do
+    local found = findAXElement(child, targetRole)
+    if found then return found end
+  end
+  return nil
+end
+
+--- Get the number of tabs and splits in a Ghostty window
+-- Uses macOS accessibility APIs to count UI elements
+-- @param window hs.window object
+-- @return tabCount, splitCount (both integers, minimum 1)
+local function getGhosttyTabsAndSplits(window)
+  if not window then return 1, 1 end
+
+  local ax = hs.axuielement.windowElement(window)
+  if not ax then return 1, 1 end
+
+  -- Count tabs: look for AXTabGroup children
+  local tabCount = 1
+  local tabGroup = findAXElement(ax, "AXTabGroup")
+  if tabGroup then
+    local tabs = tabGroup:attributeValue("AXTabs") or tabGroup:attributeValue("AXChildren") or {}
+    tabCount = math.max(1, #tabs)
+  end
+
+  -- Count splits: count AXTextArea elements (each split has one)
+  local splitCount = math.max(1, countAXRole(ax, "AXTextArea"))
+
+  return tabCount, splitCount
+end
+
 --- Adjust font size for a specific Ghostty window using keystroke simulation
 -- Sends cmd+= (increase) or cmd+- (decrease) keystrokes to change font size
 -- @param window hs.window object to adjust
@@ -519,9 +574,10 @@ local function updateGhosttyWindowFont(window)
     return false -- Don't adjust on initialization, assume config.local is correct
   end
 
-  -- Check if screen TYPE changed (built-in <-> external)
-  if state.isBuiltin == isBuiltin then
-    log.d(string.format("Window %d screen type unchanged (builtin=%s), skipping adjustment", windowId, tostring(isBuiltin)))
+  -- Check if screen TYPE changed (built-in <-> external) OR target size changed
+  if state.isBuiltin == isBuiltin and state.fontSize == targetSize then
+    log.d(string.format("Window %d screen type unchanged (builtin=%s) and size unchanged (%d), skipping adjustment",
+      windowId, tostring(isBuiltin), targetSize))
     return false
   end
 
@@ -534,7 +590,7 @@ local function updateGhosttyWindowFont(window)
   end
 
   -- Adjust font size
-  log.i(string.format("Window %d moved to %s screen '%s', adjusting font: %d -> %d",
+  log.i(string.format("Window %d on %s screen '%s', adjusting font: %d -> %d",
     windowId, isBuiltin and "built-in" or "external", screenName, state.fontSize, targetSize))
 
   local adjusted = adjustGhosttyWindowFontSize(window, targetSize, state.fontSize)
@@ -550,48 +606,6 @@ local function updateGhosttyWindowFont(window)
   end
 
   return adjusted
-end
-
---- Update all Ghostty windows with appropriate font sizes
--- Groups windows by screen to optimize space-switching overhead
-local function updateAllGhosttyWindows()
-  -- Get all Ghostty windows across all spaces
-  local allWindows = hs.window.filter.new(false):setAppFilter('Ghostty'):getWindows()
-
-  if not allWindows or #allWindows == 0 then
-    log.d("No Ghostty windows found")
-    return
-  end
-
-  log.d(string.format("Updating %d Ghostty window(s)", #allWindows))
-
-  -- Group windows by screen name for optimization
-  local windowsByScreen = {}
-  for _, window in ipairs(allWindows) do
-    if window:isStandard() then
-      local screen = window:screen()
-      if screen then
-        local screenName = screen:name()
-        if not windowsByScreen[screenName] then
-          windowsByScreen[screenName] = {}
-        end
-        table.insert(windowsByScreen[screenName], window)
-      end
-    end
-  end
-
-  -- Update windows grouped by screen
-  local updateCount = 0
-  for screenName, windows in pairs(windowsByScreen) do
-    log.d(string.format("Processing %d window(s) on screen '%s'", #windows, screenName))
-    for _, window in ipairs(windows) do
-      if updateGhosttyWindowFont(window) then
-        updateCount = updateCount + 1
-      end
-    end
-  end
-
-  log.i(string.format("Updated %d/%d Ghostty window(s)", updateCount, #allWindows))
 end
 
 --- Update font size in a single other.xml file (creates if doesn't exist)
@@ -775,8 +789,11 @@ local function updateJetBrainsIDEFontSize(fontSize)
 end
 
 --- Update Ghostty terminal font size via config file modification and reload
--- Since set_font_size is per-split, we instead modify the config file and reload
--- This updates ALL splits/tabs/windows globally via ctrl+a>r (reload_config)
+-- 1. Modifies config.local overlay with new font size
+-- 2. Uses accessibility API to count actual tabs and splits in each window
+-- 3. Sends reload_config (cmd+shift+,) to load new config
+-- 4. Cycles through all tabs and splits, sending reset_font_size (cmd+0) to each
+-- This ensures ALL tabs and splits get the new font size from config
 -- @param fontSize number - target font size
 local function updateGhosttyFontSize(fontSize)
   log.i(string.format("Updating Ghostty font size to %d via config overlay", fontSize))
@@ -837,19 +854,42 @@ local function updateGhosttyFontSize(fontSize)
       end
 
       -- Focus this window (works even if on different space)
-      -- This will switch spaces if needed
       window:focus()
-      hs.timer.usleep(75000)  -- 75ms for space switching
+      hs.timer.usleep(200000)  -- 200ms for space switching and focus
 
-      -- Send ctrl+a>r (reload_config)
-      -- First send ctrl+a
-      hs.eventtap.keyStroke({"ctrl"}, "a", 0)
-      hs.timer.usleep(50000)  -- 50ms between chord keys
-      -- Then send r
-      hs.eventtap.keyStroke({}, "r", 0)
-      hs.timer.usleep(25000)  -- 25ms before next window
+      -- Get actual tab and split counts via accessibility API
+      local tabCount, totalSplits = getGhosttyTabsAndSplits(window)
+      -- Estimate splits per tab (round up to ensure coverage)
+      local splitsPerTab = math.ceil(totalSplits / tabCount)
+      log.d(string.format("Window %d: %d tabs, %d total splits (~%d per tab)", i, tabCount, totalSplits, splitsPerTab))
 
-      log.d(string.format("Sent reload command to window %d", i))
+      -- First reload config to update the default font size
+      hs.eventtap.keyStroke({"cmd", "shift"}, ",", 0)
+      hs.timer.usleep(200000)  -- 200ms for config reload
+
+      -- Cycle through all tabs and splits, resetting font on each
+      -- cmd+0 = reset_font_size (resets to config default)
+      -- cmd+] = goto_split:next (cycle splits within tab)
+      -- cmd+shift+] = next_tab (cycle tabs)
+      local totalResets = 0
+
+      for tab = 1, tabCount do
+        for split = 1, splitsPerTab do
+          -- Reset font size on current split
+          hs.eventtap.keyStroke({"cmd"}, "0", 0)
+          hs.timer.usleep(30000)  -- 30ms
+          totalResets = totalResets + 1
+
+          -- Move to next split within this tab
+          hs.eventtap.keyStroke({"cmd"}, "]", 0)
+          hs.timer.usleep(30000)  -- 30ms
+        end
+        -- Move to next tab
+        hs.eventtap.keyStroke({"cmd", "shift"}, "]", 0)
+        hs.timer.usleep(30000)  -- 30ms
+      end
+
+      log.d(string.format("Sent reload + %d reset_font_size to window %d (%d tabs × %d splits)", totalResets, i, tabCount, splitsPerTab))
       successCount = successCount + 1
     end)
 
@@ -871,6 +911,55 @@ local function updateGhosttyFontSize(fontSize)
   else
     log.w("Failed to reload any Ghostty windows")
   end
+end
+
+--- Check if any Ghostty window is on a built-in display
+-- @return boolean true if any window is on built-in, false if all on external (or no windows)
+local function anyGhosttyWindowOnBuiltin()
+  local allWindows = hs.window.filter.new(false):setAppFilter('Ghostty'):getWindows()
+
+  if not allWindows or #allWindows == 0 then
+    log.d("No Ghostty windows found for position check")
+    return false -- No windows = treat as external (use larger font)
+  end
+
+  for _, window in ipairs(allWindows) do
+    if window:isStandard() then
+      local screen = window:screen()
+      if screen and isBuiltinScreen(screen) then
+        log.d(string.format("Window %d is on built-in screen '%s'", window:id(), screen:name()))
+        return true
+      end
+    end
+  end
+
+  log.d(string.format("All %d Ghostty window(s) are on external displays", #allWindows))
+  return false
+end
+
+--- Update all Ghostty windows based on window positions (hybrid approach)
+-- Uses smaller font if ANY window is on built-in display
+-- Uses larger font only if ALL windows are on external displays
+-- Uses global config+reload approach (affects all splits correctly)
+local function updateAllGhosttyWindows()
+  local hasBuiltinWindow = anyGhosttyWindowOnBuiltin()
+  local fontSize = hasBuiltinWindow and config.ghosttyFontSizeWithoutMonitor or config.ghosttyFontSizeWithMonitor
+
+  -- Track last applied size to avoid unnecessary reloads
+  local lastSize = ghosttyWindowStates._lastAppliedSize
+  if lastSize == fontSize then
+    log.d(string.format("Ghostty font size unchanged (%d), skipping reload", fontSize))
+    return
+  end
+
+  log.i(string.format("Ghostty windows: %s on built-in → applying font size %d via config reload",
+    hasBuiltinWindow and "some" or "none", fontSize))
+
+  -- Use global config+reload approach (works for all splits)
+  updateGhosttyFontSize(fontSize)
+
+  -- Remember applied size
+  ghosttyWindowStates._lastAppliedSize = fontSize
 end
 
 --- Handle screen configuration changes
@@ -1022,21 +1111,24 @@ end
 ghosttyWindowFilter = hs.window.filter.new('Ghostty')
   :subscribe(hs.window.filter.windowMoved, function(window, appName, event)
     if config.ghosttyPerWindowFontSizing then
-      log.d(string.format("Window moved event for Ghostty window %d", window:id()))
-      updateGhosttyWindowFont(window)
+      log.d(string.format("Ghostty window %d moved - checking all window positions", window:id()))
+      -- Hybrid approach: check all windows and apply appropriate global font
+      updateAllGhosttyWindows()
     end
   end)
   :subscribe(hs.window.filter.windowCreated, function(window, appName, event)
     if config.ghosttyPerWindowFontSizing then
-      log.d(string.format("Window created event for Ghostty window %d", window:id()))
-      updateGhosttyWindowFont(window)
+      log.d(string.format("Ghostty window %d created - checking all window positions", window:id()))
+      -- Hybrid approach: check all windows and apply appropriate global font
+      updateAllGhosttyWindows()
     end
   end)
   :subscribe(hs.window.filter.windowDestroyed, function(window, appName, event)
     if config.ghosttyPerWindowFontSizing then
-      local windowId = window:id()
-      log.d(string.format("Window destroyed event for Ghostty window %d", windowId))
-      ghosttyWindowStates[windowId] = nil
+      log.d(string.format("Ghostty window %d destroyed - checking remaining window positions", window:id()))
+      -- Clean up state and recheck positions
+      ghosttyWindowStates[window:id()] = nil
+      updateAllGhosttyWindows()
     end
   end)
 
@@ -1607,13 +1699,13 @@ function showConfigUI()
         <div class="description">Shows verbose logging and startup alerts (requires reload)</div>
       </div>
       <div class="config-item">
-        <label>Per-Window Font Sizing (Ghostty)</label>
+        <label>Window Position Aware (Ghostty)</label>
         <div class="checkbox-wrapper">
           <input type="checkbox" id="ghosttyPerWindowFontSizing" %s>
           <span class="custom-checkbox"></span>
-          <label for="ghosttyPerWindowFontSizing">Enable Per-Window Font Sizing</label>
+          <label for="ghosttyPerWindowFontSizing">Enable Window Position Tracking</label>
         </div>
-        <div class="description">Adjust font size individually per window based on which monitor it's on (experimental)</div>
+        <div class="description">Use smaller font if any Ghostty window is on built-in display; larger font only when all windows are on external</div>
       </div>
     </div>
 
