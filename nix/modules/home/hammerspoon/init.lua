@@ -773,7 +773,7 @@ local function updateJetBrainsIDEFontSize(fontSize)
     end
   end
 
-  -- Apply font changes to running IDEs without restart
+  -- Apply font changes to running IDEs without restart (async to avoid blocking)
   if uiUpdateCount > 0 then
     local runningApps = hs.application.runningApplications()
     local scriptPath = os.getenv("HOME") .. "/.hammerspoon/change-jetbrains-fonts.groovy"
@@ -807,17 +807,16 @@ local function updateJetBrainsIDEFontSize(fontSize)
               file:close()
             end
 
-            -- Execute ideScript to change fonts without restart
-            local cmd = string.format(
-              '"%s" ideScript "%s" 2>&1',
-              app:path() .. "/Contents/MacOS/" .. ideLauncher,
-              scriptPath
-            )
-
-            local output, status = hs.execute(cmd)
-            if not status then
-              log.w(string.format("Failed to reload fonts in %s: %s", appName, output or "unknown error"))
-            end
+            -- Execute ideScript asynchronously (doesn't need focus, runs in background)
+            local executable = app:path() .. "/Contents/MacOS/" .. ideLauncher
+            local task = hs.task.new(executable, function(exitCode, stdOut, stdErr)
+              if exitCode ~= 0 then
+                log.w(string.format("Failed to reload fonts in %s: %s", appName, stdErr or "unknown error"))
+              else
+                log.d(string.format("Font reload completed for %s", appName))
+              end
+            end, {"ideScript", scriptPath})
+            task:start()
 
             break  -- Don't check other patterns for this app
           end
@@ -831,14 +830,61 @@ local function updateJetBrainsIDEFontSize(fontSize)
   end
 end
 
+--- Send keystrokes to Ghostty window sequentially with proper async delays
+-- This ensures each keystroke is processed before the next one is sent
+-- @param window hs.window - Ghostty window to send keystrokes to
+-- @param totalSplits number - Total number of splits to process
+-- @param windowIndex number - Index of this window for logging
+-- @param callback function - Called when all keystrokes are sent
+local function sendGhosttyKeystrokesSequentially(window, totalSplits, windowIndex, callback)
+  local keystrokeDelay = 0.075  -- 75ms between keystrokes for Ghostty to process
+  local currentSplit = 0
+
+  -- Step 1: Reload config
+  log.d(string.format("Window %d: Sending reload_config (cmd+shift+,)", windowIndex))
+  hs.eventtap.keyStroke({"cmd", "shift"}, ",", 0)
+
+  -- Step 2: After reload, cycle through splits
+  hs.timer.doAfter(0.15, function()  -- 150ms for config reload
+    local function processNextSplit()
+      currentSplit = currentSplit + 1
+
+      if currentSplit > totalSplits then
+        -- All splits processed
+        log.d(string.format("Sent reload + %d reset_font_size to window %d", totalSplits, windowIndex))
+        callback()
+        return
+      end
+
+      -- Reset font size on current split
+      log.d(string.format("Window %d: Split %d/%d - sending reset_font_size (cmd+0)", windowIndex, currentSplit, totalSplits))
+      hs.eventtap.keyStroke({"cmd"}, "0", 0)
+
+      -- Move to next split after a delay
+      -- After totalSplits iterations, this cycles back to the original split
+      hs.timer.doAfter(keystrokeDelay, function()
+        log.d(string.format("Window %d: Split %d/%d - sending goto_split:next (cmd+])", windowIndex, currentSplit, totalSplits))
+        hs.eventtap.keyStroke({"cmd"}, "]", 0)
+
+        -- Process next split after another delay
+        hs.timer.doAfter(keystrokeDelay, processNextSplit)
+      end)
+    end
+
+    processNextSplit()
+  end)
+end
+
 --- Update Ghostty terminal font size via config file modification and reload
 -- 1. Modifies config.local overlay with new font size
 -- 2. Uses accessibility API to count actual tabs and splits in each window
 -- 3. Sends reload_config (cmd+shift+,) to load new config
 -- 4. Cycles through all tabs and splits, sending reset_font_size (cmd+0) to each
 -- This ensures ALL tabs and splits get the new font size from config
+-- All keystrokes are sent sequentially with async delays (not blocking usleep)
 -- @param fontSize number - target font size
-local function updateGhosttyFontSize(fontSize)
+-- @param onComplete function - optional callback when all keystrokes complete
+local function updateGhosttyFontSize(fontSize, onComplete)
   log.i(string.format("Updating Ghostty font size to %d via config overlay", fontSize))
 
   -- Path to Ghostty config overlay (writable, not managed by Nix)
@@ -876,79 +922,43 @@ local function updateGhosttyFontSize(fontSize)
     ghostty = windows[1]:application()
   end
 
-  -- Remember currently focused window
-  local currentlyFocused = hs.window.focusedWindow()
-
-  -- Track successful reloads
-  local successCount = 0
-  local failCount = 0
-
   -- Activate Ghostty application first (ensures it's frontmost)
   ghostty:activate()
-  hs.timer.usleep(100000)  -- 100ms for activation
 
-  -- Send reload to each Ghostty window (including those on other spaces)
-  for i, window in ipairs(windows) do
-    local success, err = pcall(function()
-      -- Verify window still exists (don't check isVisible as it fails for other spaces)
-      if not window then
-        log.d(string.format("Window %d is no longer available, skipping", i))
-        return
+  -- Process windows sequentially (one at a time, not in parallel)
+  local windowIndex = 0
+  local function processNextWindow()
+    windowIndex = windowIndex + 1
+
+    if windowIndex > #windows then
+      -- All windows processed
+      log.i(string.format("Sent reload_config to %d Ghostty window(s)", #windows))
+      -- Call completion callback if provided
+      if onComplete then
+        onComplete()
       end
+      return
+    end
 
-      -- Focus this window (works even if on different space)
-      window:focus()
-      hs.timer.usleep(200000)  -- 200ms for space switching and focus
+    local window = windows[windowIndex]
 
+    -- Focus this window (works even if on different space)
+    window:focus()
+
+    -- Wait for focus to settle, then get split info and send keystrokes
+    hs.timer.doAfter(0.1, function()  -- 100ms for space switching and focus
       -- Get actual tab and split counts via accessibility API
       local tabCount, totalSplits = getGhosttyTabsAndSplits(window)
-      -- Estimate splits per tab (round up to ensure coverage)
       local splitsPerTab = math.ceil(totalSplits / tabCount)
-      log.d(string.format("Window %d: %d tabs, %d total splits (~%d per tab)", i, tabCount, totalSplits, splitsPerTab))
+      log.d(string.format("Window %d: %d tabs, %d total splits (~%d per tab)", windowIndex, tabCount, totalSplits, splitsPerTab))
 
-      -- First reload config to update the default font size
-      hs.eventtap.keyStroke({"cmd", "shift"}, ",", 0)
-      hs.timer.usleep(200000)  -- 200ms for config reload
-
-      -- Cycle through all splits, resetting font on each
-      -- cmd+0 = reset_font_size (resets to config default)
-      -- cmd+] = goto_split:next (cycles through ALL splits globally)
-      -- After totalSplits iterations, we return to the original position
-      local totalResets = 0
-
-      for _ = 1, totalSplits do
-        -- Reset font size on current split
-        hs.eventtap.keyStroke({"cmd"}, "0", 0)
-        hs.timer.usleep(30000)  -- 30ms
-        totalResets = totalResets + 1
-
-        -- Move to next split (cycles globally through all splits)
-        hs.eventtap.keyStroke({"cmd"}, "]", 0)
-        hs.timer.usleep(30000)  -- 30ms
-      end
-
-      log.d(string.format("Sent reload + %d reset_font_size to window %d (%d tabs × %d splits)", totalResets, i, tabCount, splitsPerTab))
-      successCount = successCount + 1
-    end)
-
-    if not success then
-      failCount = failCount + 1
-      log.w(string.format("Failed to reload window %d: %s", i, tostring(err)))
-    end
-  end
-
-  -- Restore original focus
-  if currentlyFocused and currentlyFocused:isVisible() then
-    pcall(function()
-      currentlyFocused:focus()
+      -- Send keystrokes sequentially with async delays
+      sendGhosttyKeystrokesSequentially(window, totalSplits, windowIndex, processNextWindow)
     end)
   end
 
-  if successCount > 0 then
-    log.i(string.format("Sent reload_config to %d Ghostty window(s) (%d failed)", successCount, failCount))
-  else
-    log.w("Failed to reload any Ghostty windows")
-  end
+  -- Start processing first window after activation delay
+  hs.timer.doAfter(0.1, processNextWindow)
 end
 
 --- Check if any Ghostty window is on a built-in display
@@ -1003,6 +1013,8 @@ end
 --- Handle screen configuration changes
 -- Called when display configuration changes or system wakes from sleep
 -- Determines which displays are active and applies appropriate font size
+-- Fully async: returns immediately, all updates happen in background
+-- Always restores original focus after all updates complete
 local function screenChanged()
   local allScreens = hs.screen.allScreens()
   local currentScreenCount = #allScreens
@@ -1021,35 +1033,64 @@ local function screenChanged()
   lastScreenCount = currentScreenCount
   lastScreenSignature = currentSignature
 
-  if hasExternalMonitor then
-    -- External monitor connected (use larger font for external or dual display)
-    log.i(string.format("Using larger font size %d for external monitor", config.fontSizeWithMonitor))
-    updateJetBrainsIDEFontSize(config.fontSizeWithMonitor)
+  -- Capture original focus to restore after all updates
+  local originalWindow = hs.window.focusedWindow()
+  local originalApp = hs.application.frontmostApplication()
 
-    -- Handle Ghostty font sizing based on per-window mode
-    if config.ghosttyPerWindowFontSizing then
-      log.i("Per-window Ghostty font sizing enabled - updating all windows individually")
-      cleanupGhosttyWindowStates()
-      updateAllGhosttyWindows()
-    else
-      log.i(string.format("Using larger Ghostty font size %d for external monitor (global mode)", config.ghosttyFontSizeWithMonitor))
-      updateGhosttyFontSize(config.ghosttyFontSizeWithMonitor)
-    end
-  else
-    -- Only built-in display
-    log.i(string.format("Using smaller font size %d for built-in display", config.fontSizeWithoutMonitor))
-    updateJetBrainsIDEFontSize(config.fontSizeWithoutMonitor)
+  -- Determine font sizes based on display configuration
+  local jetbrainsFontSize = hasExternalMonitor and config.fontSizeWithMonitor or config.fontSizeWithoutMonitor
+  local ghosttyFontSize = hasExternalMonitor and config.ghosttyFontSizeWithMonitor or config.ghosttyFontSizeWithoutMonitor
 
-    -- Handle Ghostty font sizing based on per-window mode
-    if config.ghosttyPerWindowFontSizing then
-      log.i("Per-window Ghostty font sizing enabled - updating all windows individually")
-      cleanupGhosttyWindowStates()
-      updateAllGhosttyWindows()
-    else
-      log.i(string.format("Using smaller Ghostty font size %d for built-in display (global mode)", config.ghosttyFontSizeWithoutMonitor))
-      updateGhosttyFontSize(config.ghosttyFontSizeWithoutMonitor)
-    end
+  log.i(string.format("Using font sizes: JetBrains=%d, Ghostty=%d", jetbrainsFontSize, ghosttyFontSize))
+
+  -- Helper to restore original focus
+  local function restoreOriginalFocus()
+    hs.timer.doAfter(0.1, function()
+      if originalWindow and originalWindow:isVisible() then
+        pcall(function() originalWindow:focus() end)
+        log.d("Restored focus to original window")
+      elseif originalApp then
+        pcall(function() originalApp:activate() end)
+        log.d("Restored focus to original app")
+      end
+    end)
   end
+
+  -- Store timers in global variables to prevent garbage collection during init
+  -- See: https://github.com/Hammerspoon/hammerspoon/issues/3102
+
+  -- Start JetBrains update first (fast file ops, ideScript runs async via hs.task)
+  _G._jetbrainsTimer = hs.timer.doAfter(0, function()
+    _G._jetbrainsTimer = nil  -- Allow GC after firing
+    log.d("Starting JetBrains update (async)")
+    updateJetBrainsIDEFontSize(jetbrainsFontSize)
+  end)
+
+  -- Start Ghostty update after a short delay (needs uninterrupted keystroke sending)
+  _G._ghosttyTimer = hs.timer.doAfter(0.2, function()
+    _G._ghosttyTimer = nil  -- Allow GC after firing
+    log.d("Starting Ghostty update (async)")
+    local success, err = pcall(function()
+      if config.ghosttyPerWindowFontSizing then
+        log.i("Per-window Ghostty font sizing enabled - updating all windows individually")
+        cleanupGhosttyWindowStates()
+        updateAllGhosttyWindows()
+        -- Restore focus after per-window updates complete
+        restoreOriginalFocus()
+      else
+        log.i(string.format("Updating Ghostty font size to %d (global mode)", ghosttyFontSize))
+        -- Pass callback to restore focus only AFTER all keystrokes complete
+        updateGhosttyFontSize(ghosttyFontSize, restoreOriginalFocus)
+      end
+    end)
+    if not success then
+      log.e(string.format("Ghostty update failed: %s", tostring(err)))
+      -- Restore focus even on error
+      restoreOriginalFocus()
+    end
+  end)
+
+  log.d("Screen change handlers scheduled (async)")
 end
 
 --- Polling-based screen detection (fallback for when watcher fails)
