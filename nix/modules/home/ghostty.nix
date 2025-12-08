@@ -86,7 +86,7 @@ in
         "shift+enter=text:\\n"
 
         # Quick Terminal global hotkey (requires Accessibility permission)
-        "global:cmd+grave_accent=toggle_quick_terminal"
+        "global:cmd+alt+grave_accent=toggle_quick_terminal"
 
         # Inspector for debugging keybindings
         "super+i=inspector:toggle"
@@ -139,9 +139,9 @@ in
         "alt+eight=goto_tab:8"
         "alt+nine=goto_tab:9"
 
-        # Alternative tab navigation
-        "cmd+shift+right=next_tab"
-        "cmd+shift+left=previous_tab"
+        # Tab navigation with ~ (grave accent)
+        "cmd+grave_accent=next_tab"
+        "cmd+shift+grave_accent=previous_tab"
 
         # Shell integration - jump between prompts
         "ctrl+shift+up=jump_to_prompt:-1"
