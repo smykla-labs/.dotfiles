@@ -164,7 +164,7 @@ local function generateHtml(config)
       font-size: 15px;
       font-weight: 500;
     }
-    input[type="number"], input[type="text"] {
+    input[type="text"] {
       width: 100%%;
       height: 50px;
       padding: 0 14px;
@@ -172,16 +172,80 @@ local function generateHtml(config)
       border-radius: 6px;
       font-size: 18px;
       font-family: 'Menlo', 'Consolas', 'Courier New', monospace;
-    }
-    input[type="number"] {
-      text-align: center;
-    }
-    input[type="text"] {
       text-align: left;
     }
-    input:focus {
+    input[type="text"]:focus {
       outline: none;
       border-color: #1ABC9C;
+    }
+    /* Custom number input wrapper */
+    .number-input-wrapper {
+      display: flex;
+      align-items: stretch;
+      height: 50px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      overflow: hidden;
+      background: white;
+    }
+    .number-input-wrapper:focus-within {
+      border-color: #1ABC9C;
+    }
+    .number-input-wrapper input[type="number"] {
+      flex: 1;
+      height: 100%%;
+      padding: 0 10px;
+      border: none;
+      border-radius: 0;
+      font-size: 18px;
+      font-family: 'Menlo', 'Consolas', 'Courier New', monospace;
+      text-align: center;
+      background: transparent;
+      -moz-appearance: textfield;
+    }
+    .number-input-wrapper input[type="number"]::-webkit-outer-spin-button,
+    .number-input-wrapper input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .number-input-wrapper input[type="number"]:focus {
+      outline: none;
+    }
+    .number-input-arrows {
+      display: flex;
+      flex-direction: column;
+      width: 32px;
+      border-left: 1px solid #ddd;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .number-input-arrow {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f8f9fa;
+      cursor: default;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: background-color 0.1s;
+    }
+    .number-input-arrow:first-child {
+      border-bottom: 1px solid #ddd;
+    }
+    .number-input-arrow:hover {
+      background: #e9ecef;
+    }
+    .number-input-arrow:active {
+      background: #dee2e6;
+    }
+    .number-input-arrow svg {
+      width: 12px;
+      height: 12px;
+      fill: #666;
+    }
+    .number-input-arrow:hover svg {
+      fill: #333;
     }
     .checkbox-wrapper {
       display: flex;
@@ -501,12 +565,24 @@ local function generateHtml(config)
           <!-- Built-in Display -->
           <div style="display: flex; flex-direction: column; gap: 8px;">
             <div style="font-size: 12px; color: #888; margin-bottom: 2px;">Built-in Display</div>
-            <input type="number" id="fontSizeWithoutMonitor" min="8" max="30" value="%d">
+            <div class="number-input-wrapper">
+              <input type="number" id="fontSizeWithoutMonitor" min="8" max="30" value="%d">
+              <div class="number-input-arrows">
+                <div class="number-input-arrow" data-input="fontSizeWithoutMonitor" data-dir="up"></div>
+                <div class="number-input-arrow" data-input="fontSizeWithoutMonitor" data-dir="down"></div>
+              </div>
+            </div>
           </div>
           <!-- External Monitor -->
           <div style="display: flex; flex-direction: column; gap: 8px;">
             <div style="font-size: 12px; color: #888; margin-bottom: 2px;">External Monitor</div>
-            <input type="number" id="fontSizeWithMonitor" min="8" max="30" value="%d">
+            <div class="number-input-wrapper">
+              <input type="number" id="fontSizeWithMonitor" min="8" max="30" value="%d">
+              <div class="number-input-arrows">
+                <div class="number-input-arrow" data-input="fontSizeWithMonitor" data-dir="up"></div>
+                <div class="number-input-arrow" data-input="fontSizeWithMonitor" data-dir="down"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -521,12 +597,24 @@ local function generateHtml(config)
           <!-- Built-in Display -->
           <div style="display: flex; flex-direction: column; gap: 8px;">
             <div style="font-size: 12px; color: #888; margin-bottom: 2px;">Built-in Display</div>
-            <input type="number" id="ghosttyFontSizeWithoutMonitor" min="8" max="30" value="%d">
+            <div class="number-input-wrapper">
+              <input type="number" id="ghosttyFontSizeWithoutMonitor" min="8" max="30" value="%d">
+              <div class="number-input-arrows">
+                <div class="number-input-arrow" data-input="ghosttyFontSizeWithoutMonitor" data-dir="up"></div>
+                <div class="number-input-arrow" data-input="ghosttyFontSizeWithoutMonitor" data-dir="down"></div>
+              </div>
+            </div>
           </div>
           <!-- External Monitor -->
           <div style="display: flex; flex-direction: column; gap: 8px;">
             <div style="font-size: 12px; color: #888; margin-bottom: 2px;">External Monitor</div>
-            <input type="number" id="ghosttyFontSizeWithMonitor" min="8" max="30" value="%d">
+            <div class="number-input-wrapper">
+              <input type="number" id="ghosttyFontSizeWithMonitor" min="8" max="30" value="%d">
+              <div class="number-input-arrows">
+                <div class="number-input-arrow" data-input="ghosttyFontSizeWithMonitor" data-dir="up"></div>
+                <div class="number-input-arrow" data-input="ghosttyFontSizeWithMonitor" data-dir="down"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -879,7 +967,71 @@ local function generateHtml(config)
       };
     }
 
+    // Create up/down arrow SVG icons for number inputs
+    function createUpArrowIcon() {
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', 'M7 14l5-5 5 5z');
+      svg.appendChild(path);
+      return svg;
+    }
+
+    function createDownArrowIcon() {
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', 'M7 10l5 5 5-5z');
+      svg.appendChild(path);
+      return svg;
+    }
+
+    // Handle number input arrow clicks
+    function setupNumberInputArrows() {
+      const arrows = document.querySelectorAll('.number-input-arrow');
+      arrows.forEach(arrow => {
+        // Add icon
+        const dir = arrow.getAttribute('data-dir');
+        if (dir === 'up') {
+          arrow.appendChild(createUpArrowIcon());
+        } else {
+          arrow.appendChild(createDownArrowIcon());
+        }
+
+        // Prevent text selection on mousedown
+        arrow.addEventListener('mousedown', function(e) {
+          e.preventDefault();
+        });
+
+        // Add click handler
+        arrow.addEventListener('click', function(e) {
+          e.preventDefault();
+          const inputId = this.getAttribute('data-input');
+          const input = document.getElementById(inputId);
+          if (!input) return;
+
+          const min = parseInt(input.getAttribute('min')) || 0;
+          const max = parseInt(input.getAttribute('max')) || 100;
+          let value = parseInt(input.value) || min;
+
+          if (dir === 'up') {
+            value = Math.min(value + 1, max);
+          } else {
+            value = Math.max(value - 1, min);
+          }
+
+          input.value = value;
+          // Dispatch events to trigger change detection
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+      });
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
+      // Setup custom number input arrows
+      setupNumberInputArrows();
+
       const checkboxWrappers = document.querySelectorAll('.checkbox-wrapper');
       checkboxWrappers.forEach(wrapper => {
         wrapper.addEventListener('click', function(e) {
@@ -887,6 +1039,8 @@ local function generateHtml(config)
             const checkbox = wrapper.querySelector('input[type="checkbox"]');
             if (checkbox) {
               checkbox.checked = !checkbox.checked;
+              // Trigger change detection
+              checkbox.dispatchEvent(new Event('change', { bubbles: true }));
             }
           }
         });
@@ -900,6 +1054,8 @@ local function generateHtml(config)
             const checkbox = td.querySelector('input[type="checkbox"]');
             if (e.target !== checkbox) {
               checkbox.checked = !checkbox.checked;
+              // Trigger change detection
+              checkbox.dispatchEvent(new Event('change', { bubbles: true }));
             }
           }
         });
