@@ -421,6 +421,15 @@ local function generateHtml(config)
     .save-btn:active {
       background: #148F77;
     }
+    .save-btn.reload-btn {
+      background: #007AFF;
+    }
+    .save-btn.reload-btn:hover {
+      background: #0056b3;
+    }
+    .save-btn.reload-btn:active {
+      background: #004499;
+    }
     .save-btn.saving {
       pointer-events: none;
       opacity: 0.8;
@@ -583,11 +592,111 @@ local function generateHtml(config)
       return path;
     }
 
+    // State tracking for Save/Reload toggle
+    let originalConfig = null;
+    let isDirty = false;
+
+    // Get current form state as object for comparison
+    function getFormState() {
+      const idePatterns = [];
+
+      // Get checked default patterns
+      document.querySelectorAll('.default-ide:checked').forEach(checkbox => {
+        idePatterns.push(checkbox.value);
+      });
+
+      // Get custom patterns from wrappers
+      const customWrappers = document.querySelectorAll('.custom-pattern-wrapper');
+      customWrappers.forEach(wrapper => {
+        const pattern = wrapper.getAttribute('data-pattern');
+        if (pattern) {
+          idePatterns.push(pattern);
+        }
+      });
+
+      return {
+        debugMode: document.getElementById('debugMode').checked,
+        ghosttyPerWindowFontSizing: document.getElementById('ghosttyPerWindowFontSizing').checked,
+        fontSizeWithMonitor: parseInt(document.getElementById('fontSizeWithMonitor').value),
+        fontSizeWithoutMonitor: parseInt(document.getElementById('fontSizeWithoutMonitor').value),
+        ghosttyFontSizeWithMonitor: parseInt(document.getElementById('ghosttyFontSizeWithMonitor').value),
+        ghosttyFontSizeWithoutMonitor: parseInt(document.getElementById('ghosttyFontSizeWithoutMonitor').value),
+        ghosttyConfigOverlayPath: expandTildeToHome(document.getElementById('ghosttyConfigOverlayPath').value),
+        idePatterns: idePatterns.sort(),
+        wakeDelaySeconds: parseFloat(document.getElementById('wakeDelaySeconds').value),
+        pollIntervalSeconds: parseFloat(document.getElementById('pollIntervalSeconds').value)
+      };
+    }
+
+    // Compare two config objects for equality
+    function configsEqual(a, b) {
+      if (!a || !b) return false;
+
+      // Compare simple values
+      if (a.debugMode !== b.debugMode) return false;
+      if (a.ghosttyPerWindowFontSizing !== b.ghosttyPerWindowFontSizing) return false;
+      if (a.fontSizeWithMonitor !== b.fontSizeWithMonitor) return false;
+      if (a.fontSizeWithoutMonitor !== b.fontSizeWithoutMonitor) return false;
+      if (a.ghosttyFontSizeWithMonitor !== b.ghosttyFontSizeWithMonitor) return false;
+      if (a.ghosttyFontSizeWithoutMonitor !== b.ghosttyFontSizeWithoutMonitor) return false;
+      if (a.ghosttyConfigOverlayPath !== b.ghosttyConfigOverlayPath) return false;
+      if (a.wakeDelaySeconds !== b.wakeDelaySeconds) return false;
+      if (a.pollIntervalSeconds !== b.pollIntervalSeconds) return false;
+
+      // Compare IDE patterns arrays
+      if (a.idePatterns.length !== b.idePatterns.length) return false;
+      for (let i = 0; i < a.idePatterns.length; i++) {
+        if (a.idePatterns[i] !== b.idePatterns[i]) return false;
+      }
+
+      return true;
+    }
+
+    // Check if form has changes and update button accordingly
+    function checkForChanges() {
+      const currentConfig = getFormState();
+      isDirty = !configsEqual(currentConfig, originalConfig);
+
+      const saveBtn = document.getElementById('saveBtn');
+      if (isDirty) {
+        saveBtn.textContent = 'Save';
+        saveBtn.classList.remove('reload-btn');
+      } else {
+        saveBtn.textContent = 'Reload';
+        saveBtn.classList.add('reload-btn');
+      }
+    }
+
+    // Attach change listeners to all form inputs
+    function attachChangeListeners() {
+      // Number and text inputs
+      const inputs = document.querySelectorAll('input[type="number"], input[type="text"]');
+      inputs.forEach(input => {
+        input.addEventListener('input', checkForChanges);
+        input.addEventListener('change', checkForChanges);
+      });
+
+      // Checkboxes
+      const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', checkForChanges);
+      });
+    }
+
     window.addEventListener('DOMContentLoaded', function() {
       const pathInput = document.getElementById('ghosttyConfigOverlayPath');
       if (pathInput) {
         pathInput.value = replaceHomeWithTilde(pathInput.value);
       }
+
+      // Capture original config state after path normalization
+      // Use setTimeout to ensure all DOM updates are complete
+      setTimeout(function() {
+        originalConfig = getFormState();
+        // Initial state is clean - show Reload button
+        checkForChanges();
+        attachChangeListeners();
+      }, 0);
     });
 
     function removeCustomIDE(pattern) {
@@ -617,6 +726,9 @@ local function generateHtml(config)
           }
         }
       });
+
+      // Trigger change detection after removing pattern
+      checkForChanges();
     }
 
     function addCustomIDE() {
@@ -706,41 +818,25 @@ local function generateHtml(config)
       targetCell.appendChild(wrapper);
 
       input.value = '';
+
+      // Trigger change detection after adding pattern
+      checkForChanges();
     }
 
     function saveConfig() {
       const saveBtn = document.getElementById('saveBtn');
       saveBtn.classList.add('saving');
 
-      const idePatterns = [];
+      // Get current form state using shared function
+      const config = getFormState();
 
-      document.querySelectorAll('.default-ide:checked').forEach(checkbox => {
-        idePatterns.push(checkbox.value);
-      });
-
-      const customWrappers = document.querySelectorAll('.custom-pattern-wrapper');
-      customWrappers.forEach(wrapper => {
-        const pattern = wrapper.getAttribute('data-pattern');
-        if (pattern) {
-          idePatterns.push(pattern);
-        }
-      });
-
-      const config = {
-        debugMode: document.getElementById('debugMode').checked,
-        ghosttyPerWindowFontSizing: document.getElementById('ghosttyPerWindowFontSizing').checked,
-        fontSizeWithMonitor: parseInt(document.getElementById('fontSizeWithMonitor').value),
-        fontSizeWithoutMonitor: parseInt(document.getElementById('fontSizeWithoutMonitor').value),
-        ghosttyFontSizeWithMonitor: parseInt(document.getElementById('ghosttyFontSizeWithMonitor').value),
-        ghosttyFontSizeWithoutMonitor: parseInt(document.getElementById('ghosttyFontSizeWithoutMonitor').value),
-        ghosttyConfigOverlayPath: expandTildeToHome(document.getElementById('ghosttyConfigOverlayPath').value),
-        idePatterns: idePatterns,
-        wakeDelaySeconds: parseFloat(document.getElementById('wakeDelaySeconds').value),
-        pollIntervalSeconds: parseFloat(document.getElementById('pollIntervalSeconds').value)
-      };
+      // Determine action type based on whether form is dirty
+      // If dirty: save config and apply settings
+      // If clean: just reload/apply current settings without saving
+      const actionType = isDirty ? 'save' : 'reload';
 
       window.__pendingAction = {
-        type: 'save',
+        type: actionType,
         data: config
       };
     }
@@ -893,6 +989,26 @@ function M.show(config, callbacks, log)
         -- Call save callback
         if callbacks and callbacks.onSave then
           callbacks.onSave(action.data, originalFocusedWindow)
+        end
+
+        originalFocusedWindow = nil
+      elseif action.type == "reload" then
+        if log then
+          log.i("Reload button clicked (apply settings without saving)")
+        end
+
+        -- Clean up UI
+        if checkTimer then
+          checkTimer:stop()
+          checkTimer = nil
+        end
+
+        configWindow:delete()
+        configWindow = nil
+
+        -- Call reload callback (apply without save)
+        if callbacks and callbacks.onReload then
+          callbacks.onReload(originalFocusedWindow)
         end
 
         originalFocusedWindow = nil
