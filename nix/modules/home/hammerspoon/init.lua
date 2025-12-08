@@ -143,16 +143,8 @@ if config.debugMode then
   log.d("Configuration loaded with debug mode enabled")
 end
 
--- Module state
-local screenWatcher = nil
-local caffeineWatcher = nil
-local pollTimer = nil
-local lastScreenCount = 0
-local lastScreenSignature = ""
-
 -- Ghostty per-window font sizing state
 local ghosttyWindowStates = {}  -- Map of windowId -> {fontSize, screenName, isBuiltin, lastUpdate}
-local ghosttyWindowFilter = nil
 
 -------------------------------------------------------------------------------
 -- Utility Functions
@@ -275,24 +267,6 @@ end
 -------------------------------------------------------------------------------
 -- Core Functionality
 -------------------------------------------------------------------------------
-
---- Get a unique signature for current screen configuration
--- Creates a deterministic string based on screen UUIDs
--- @return string Comma-separated sorted list of screen UUIDs
-local function getScreenSignature()
-  local screens = hs.screen.allScreens()
-  local uuids = {}
-
-  for _, screen in ipairs(screens) do
-    local uuid = screen:getUUID()
-    if uuid then
-      table.insert(uuids, uuid)
-    end
-  end
-
-  table.sort(uuids)
-  return table.concat(uuids, ",")
-end
 
 --- Detect if an external monitor is connected
 -- Checks all screens to see if any external monitor is present
@@ -1010,28 +984,21 @@ local function updateAllGhosttyWindows()
   ghosttyWindowStates._lastAppliedSize = fontSize
 end
 
---- Handle screen configuration changes
--- Called when display configuration changes or system wakes from sleep
+--- Apply font settings based on current display configuration
+-- Called manually from config UI to apply font sizes to all applications
 -- Determines which displays are active and applies appropriate font size
 -- Fully async: returns immediately, all updates happen in background
 -- Always restores original focus after all updates complete
-local function screenChanged()
+function applyFontSettings()
   local allScreens = hs.screen.allScreens()
-  local currentScreenCount = #allScreens
-  local currentSignature = getScreenSignature()
   local hasExternalMonitor = isExternalMonitorActive()
   local displayType = hasExternalMonitor and "external monitor connected" or "built-in only"
 
   log.i(string.format(
-    "Screen configuration changed. Display: %s (screen count: %d, signature: %s)",
+    "Applying font settings. Display: %s (screen count: %d)",
     displayType,
-    currentScreenCount,
-    currentSignature:sub(1, 40) .. "..."  -- Log first 40 chars of signature
+    #allScreens
   ))
-
-  -- Update last screen state
-  lastScreenCount = currentScreenCount
-  lastScreenSignature = currentSignature
 
   -- Capture original focus to restore after all updates
   local originalWindow = hs.window.focusedWindow()
@@ -1093,142 +1060,19 @@ local function screenChanged()
   log.d("Screen change handlers scheduled (async)")
 end
 
---- Polling-based screen detection (fallback for when watcher fails)
--- Checks if screen signature has changed and triggers screenChanged if needed
--- Uses UUID-based signature to detect actual configuration changes, not just count
-local function pollScreens()
-  local currentSignature = getScreenSignature()
-
-  -- Check if screen configuration actually changed (not just false positive)
-  if currentSignature ~= lastScreenSignature then
-    local allScreens = hs.screen.allScreens()
-    local currentScreenCount = #allScreens
-
-    log.i(string.format(
-      "Poll detected screen configuration change (count: %d -> %d)",
-      lastScreenCount,
-      currentScreenCount
-    ))
-    screenChanged()
-  end
-end
-
---- Restart polling timer to ensure reliability after wake
--- Addresses community-reported issue where timers can become unreliable
-local function restartPollTimer()
-  if pollTimer then
-    pollTimer:stop()
-    pollTimer = nil
-  end
-
-  -- Create fresh timer instance to avoid long-running timer reliability issues
-  pollTimer = hs.timer.doEvery(config.pollIntervalSeconds, pollScreens)
-  log.d("Polling timer restarted")
-end
-
---- Handle system wake and power state changes
--- Called by caffeinate watcher when system power state changes
--- Handles multiple wake events for maximum reliability
--- @param eventType The caffeinate watcher event type
-local function systemWoke(eventType)
-  -- Handle multiple wake event types for reliability
-  if eventType == hs.caffeinate.watcher.systemDidWake then
-    log.i("System woke from sleep - checking display configuration")
-    restartPollTimer()
-    hs.timer.doAfter(config.wakeDelaySeconds, screenChanged)
-  elseif eventType == hs.caffeinate.watcher.screensDidUnlock then
-    log.i("Screens unlocked - checking display configuration")
-    restartPollTimer()
-    hs.timer.doAfter(config.wakeDelaySeconds, screenChanged)
-  elseif eventType == hs.caffeinate.watcher.screensaverDidStop then
-    log.i("Screensaver stopped - checking display configuration")
-    hs.timer.doAfter(config.wakeDelaySeconds, screenChanged)
-  elseif eventType == hs.caffeinate.watcher.sessionDidBecomeActive then
-    log.i("Session became active - checking display configuration")
-    hs.timer.doAfter(config.wakeDelaySeconds, screenChanged)
-  end
-end
-
 -------------------------------------------------------------------------------
 -- Initialization
 -------------------------------------------------------------------------------
 
--- Stop existing watchers and timers if present (prevents memory leak on reload)
-if screenWatcher then
-  screenWatcher:stop()
-  screenWatcher = nil
-end
-
-if caffeineWatcher then
-  caffeineWatcher:stop()
-  caffeineWatcher = nil
-end
-
-if pollTimer then
-  pollTimer:stop()
-  pollTimer = nil
-end
-
--- Set up screen watcher (primary detection method)
-screenWatcher = hs.screen.watcher.new(screenChanged)
-screenWatcher:start()
-
--- Set up caffeine watcher for wake events
-caffeineWatcher = hs.caffeinate.watcher.new(systemWoke)
-caffeineWatcher:start()
-
--- Set up polling timer as fallback (detects changes that watcher might miss)
--- This is especially important for monitor unplug events which can be missed
-pollTimer = hs.timer.doEvery(config.pollIntervalSeconds, pollScreens)
-
--- Set up Ghostty window filter for per-window font sizing
-if ghosttyWindowFilter then
-  ghosttyWindowFilter:unsubscribeAll()
-  ghosttyWindowFilter = nil
-end
-
-ghosttyWindowFilter = hs.window.filter.new('Ghostty')
-  :subscribe(hs.window.filter.windowMoved, function(window, appName, event)
-    if config.ghosttyPerWindowFontSizing then
-      log.d(string.format("Ghostty window %d moved - checking all window positions", window:id()))
-      -- Hybrid approach: check all windows and apply appropriate global font
-      updateAllGhosttyWindows()
-    end
-  end)
-  :subscribe(hs.window.filter.windowCreated, function(window, appName, event)
-    if config.ghosttyPerWindowFontSizing then
-      log.d(string.format("Ghostty window %d created - checking all window positions", window:id()))
-      -- Hybrid approach: check all windows and apply appropriate global font
-      updateAllGhosttyWindows()
-    end
-  end)
-  :subscribe(hs.window.filter.windowDestroyed, function(window, appName, event)
-    if config.ghosttyPerWindowFontSizing then
-      log.d(string.format("Ghostty window %d destroyed - checking remaining window positions", window:id()))
-      -- Clean up state and recheck positions
-      ghosttyWindowStates[window:id()] = nil
-      updateAllGhosttyWindows()
-    end
-  end)
-
-log.i("Ghostty window filter initialized")
-
--- Initialize screen state tracking
+-- Log startup status (no automatic font changes - manual only via config UI)
 local allScreens = hs.screen.allScreens()
-lastScreenCount = #allScreens
-lastScreenSignature = getScreenSignature()
 local hasExternalMonitor = isExternalMonitorActive()
 local displayType = hasExternalMonitor and "external monitor connected" or "built-in only"
 log.i(string.format(
-  "Display font adjuster loaded. Display: %s (screen count: %d, signature: %s)",
+  "Display font adjuster loaded (manual mode). Display: %s (screen count: %d)",
   displayType,
-  lastScreenCount,
-  lastScreenSignature:sub(1, 40) .. "..."
+  #allScreens
 ))
-
--- Perform initial font size adjustment based on current display configuration
--- This ensures fonts are correct when Hammerspoon starts up
-screenChanged()
 
 -------------------------------------------------------------------------------
 -- Configuration UI
@@ -2118,7 +1962,6 @@ function showConfigUI()
                                config.ghosttyFontSizeWithoutMonitor ~= newConfig.ghosttyFontSizeWithoutMonitor or
                                config.ghosttyConfigOverlayPath ~= newConfig.ghosttyConfigOverlayPath or
                                perWindowModeChanged
-        local pollIntervalChanged = config.pollIntervalSeconds ~= newConfig.pollIntervalSeconds
 
         -- Check if IDE patterns changed
         local idePatternsChanged = #config.idePatterns ~= #newConfig.idePatterns
@@ -2132,8 +1975,8 @@ function showConfigUI()
         end
         jetbrainsChanged = jetbrainsChanged or idePatternsChanged
 
-        log.d(string.format("Changes detected: debugMode=%s, jetbrains=%s, ghostty=%s, pollInterval=%s",
-          tostring(debugModeChanged), tostring(jetbrainsChanged), tostring(ghosttyChanged), tostring(pollIntervalChanged)))
+        log.d(string.format("Changes detected: debugMode=%s, jetbrains=%s, ghostty=%s",
+          tostring(debugModeChanged), tostring(jetbrainsChanged), tostring(ghosttyChanged)))
 
         -- Update config with new values
         config.debugMode = newConfig.debugMode
@@ -2154,11 +1997,6 @@ function showConfigUI()
 
         -- Save to persistent storage
         saveConfig(config)
-
-        -- Restart poll timer only if interval changed
-        if pollIntervalChanged then
-          restartPollTimer()
-        end
 
         -- Close window first to allow proper focus changes
         if checkTimer then
