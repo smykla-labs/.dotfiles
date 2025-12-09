@@ -1162,21 +1162,29 @@ function M.show(config, callbacks, log)
           log.i("Save button clicked")
         end
 
-        -- Clean up UI
+        -- Stop polling but keep window open until work completes
         if checkTimer then
           checkTimer:stop()
           checkTimer = nil
         end
 
-        configWindow:delete()
-        configWindow = nil
+        -- Create close callback for when work is done
+        local function closeUI()
+          if configWindow then
+            configWindow:delete()
+            configWindow = nil
+          end
 
-        -- Call save callback
-        if callbacks and callbacks.onSave then
-          callbacks.onSave(action.data, originalFocusedWindow)
+          originalFocusedWindow = nil
         end
 
-        originalFocusedWindow = nil
+        -- Call save callback with close function
+        if callbacks and callbacks.onSave then
+          callbacks.onSave(action.data, originalFocusedWindow, closeUI)
+        else
+          -- No callback, close immediately
+          closeUI()
+        end
       elseif action.type == "reload" then
         if log then
           log.i("Reload button clicked (apply settings without saving)")

@@ -162,7 +162,7 @@ function showConfigUI()
 
   -- Define callbacks for UI actions
   local callbacks = {
-    onSave = function(newConfig, originalWindow)
+    onSave = function(newConfig, originalWindow, closeUI)
       log.i("Save action from UI")
       log.d(string.format("New config: fontWithMonitor=%d, fontWithout=%d, ghosttyWithMonitor=%d, ghosttyWithout=%d",
         newConfig.fontSizeWithMonitor, newConfig.fontSizeWithoutMonitor,
@@ -208,9 +208,15 @@ function showConfigUI()
       -- Apply font settings based on what changed
       local hasExternalMonitor = display.isExternalMonitorActive(log)
 
-      -- Helper to restore original focus
-      local function restoreOriginalFocus()
+      -- Helper to close UI and restore original focus when work is done
+      local function onComplete()
         hs.timer.doAfter(0.1, function()
+          -- Close UI first
+          if closeUI then
+            closeUI()
+          end
+
+          -- Then restore focus
           if windowToRestore and windowToRestore:isVisible() then
             pcall(function() windowToRestore:focus() end)
             log.d("Restored focus to original window")
@@ -218,22 +224,36 @@ function showConfigUI()
         end)
       end
 
+      -- Store timers in global variables to prevent garbage collection
+      -- See: https://github.com/Hammerspoon/hammerspoon/issues/3102
+
       if jetbrainsChanged then
         local fontSize = hasExternalMonitor and config.fontSizeWithMonitor or config.fontSizeWithoutMonitor
         log.i(string.format("Applying JetBrains font size %d", fontSize))
-        jetbrains.updateFontSize(fontSize, config, log)
+        -- Start JetBrains update
+        _G._saveJetbrainsTimer = hs.timer.doAfter(0, function()
+          _G._saveJetbrainsTimer = nil
+          jetbrains.updateFontSize(fontSize, config, log)
+        end)
       end
 
       if ghosttyChanged then
         local fontSize = hasExternalMonitor and config.ghosttyFontSizeWithMonitor or config.ghosttyFontSizeWithoutMonitor
         log.i(string.format("Applying Ghostty font size %d", fontSize))
-        ghostty.updateFontSize(fontSize, config, log, restoreOriginalFocus)
+        -- Start Ghostty update after delay, then close UI when done
+        _G._saveGhosttyTimer = hs.timer.doAfter(0.2, function()
+          _G._saveGhosttyTimer = nil
+          ghostty.updateFontSize(fontSize, config, log, onComplete)
+        end)
       elseif jetbrainsChanged then
-        -- If only JetBrains changed, restore focus after a delay
-        restoreOriginalFocus()
+        -- If only JetBrains changed, close UI after a delay for JetBrains to complete
+        _G._saveCompleteTimer = hs.timer.doAfter(0.5, function()
+          _G._saveCompleteTimer = nil
+          onComplete()
+        end)
       else
-        -- No font changes, restore focus immediately
-        restoreOriginalFocus()
+        -- No font changes, close immediately
+        onComplete()
       end
     end,
 
