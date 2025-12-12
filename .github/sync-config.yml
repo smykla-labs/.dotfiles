@@ -1,8 +1,41 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/smykla-labs/.github/main/schemas/sync-config.schema.json
 ---
 # Unified Sync Configuration
-# Enable label removal to keep labels in sync with central config
 
 sync:
+  # Enable label removal to keep labels in sync with central config
   labels:
     allow_removal: true
+
+  files:
+    merge:
+      - path: "renovate.json"
+        strategy: "deep-merge"
+        arrayStrategies:
+          "$.extends": "append"
+          "$.ignorePaths": "append"
+          "$.packageRules": "append"
+        overrides:
+          # Dotfiles-specific extends (appended to org defaults)
+          extends:
+            - ":disableRateLimiting"
+            - ":maintainLockFilesWeekly"
+
+          # Dotfiles-specific ignore paths (appended to org defaults)
+          ignorePaths:
+            - "**/knowledge/**"
+            - "**/secrets/**"
+            - "**/todos/**"
+
+          # Enable nix manager (dotfiles-specific)
+          nix:
+            enabled: true
+
+          # Dotfiles-specific package rules (appended to org defaults)
+          packageRules:
+            - addLabels: ["mise"]
+              automerge: true
+              automergeType: "pr"
+              description: "Automerge non-major mise updates via PR"
+              matchManagers: ["mise"]
+              matchUpdateTypes: ["minor", "patch"]

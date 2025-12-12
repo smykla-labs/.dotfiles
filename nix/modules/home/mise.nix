@@ -11,25 +11,18 @@
   programs.mise = {
     enable = true;
 
+    # Disable bash integration - manually configured in bash.nix to avoid duplicate activation
+    enableBashIntegration = true;
+
     # Enable fish shell integration (full activation with hook-env per prompt)
     enableFishIntegration = true;
 
     # Global tool configuration
     # Written to $XDG_CONFIG_HOME/mise/config.toml
+    #
+    # Tool versions are read from mise/config.toml and managed by Renovate
     globalConfig = {
-      tools = {
-        actionlint = "1.7.8";
-        age = "1.2.1";
-        cosign = "3.0.2";
-        go = "1.25.4";
-        golangci-lint = "2.6.2";
-        "npm:markdownlint-cli" = "0.45.0";
-        pnpm = "10.22.0";
-        ruby = "3.4.7";
-        shellcheck = "0.11.0";
-        task = "3.45.4";
-        tflint = "0.60.0";
-      };
+      tools = (builtins.fromTOML (builtins.readFile ./mise/config.toml)).tools;
 
       settings = {
         experimental = true;
