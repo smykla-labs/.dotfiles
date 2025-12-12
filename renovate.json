@@ -5,6 +5,7 @@
     ":disableRateLimiting",
     ":gitSignOff",
     ":label(dependencies)",
+    ":maintainLockFilesWeekly",
     ":rebaseStalePrs",
     ":enableVulnerabilityAlertsWithAdditionalLabel(area/security)",
     ":automergeDigest",
@@ -14,28 +15,31 @@
     "group:linters",
     "security:openssf-scorecard"
   ],
+  "ignorePaths": [
+    "**/knowledge/**",
+    "**/secrets/**",
+    "**/todos/**",
+    "**/tmp/**"
+  ],
+  "nix": {
+    "enabled": true
+  },
   "osvVulnerabilityAlerts": true,
   "packageRules": [
     {
+      "addLabels": ["github-actions"],
+      "commitMessageTopic": "{{depName}} action",
       "description": "GitHub Actions dependencies",
       "matchManagers": ["github-actions"],
-      "addLabels": ["github-actions"],
-      "semanticCommitType": "ci",
-      "commitMessageTopic": "{{depName}} action"
+      "semanticCommitType": "ci"
     },
     {
-      "description": "Automerge non-major mise updates via PR",
-      "matchManagers": ["mise"],
-      "matchUpdateTypes": ["minor", "patch"],
       "addLabels": ["mise"],
       "automerge": true,
-      "automergeType": "pr"
+      "automergeType": "pr",
+      "description": "Automerge non-major mise updates via PR",
+      "matchManagers": ["mise"],
+      "matchUpdateTypes": ["minor", "patch"]
     }
-  ],
-  "ignorePaths": [
-    "**/tmp/**",
-    "**/secrets/**",
-    "**/todos/**",
-    "**/knowledge/**"
   ]
 }
