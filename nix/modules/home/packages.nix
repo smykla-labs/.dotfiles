@@ -29,7 +29,8 @@
     # ============================================================================
     broot         # Directory tree navigation
     tree          # Directory tree display
-    direnv        # Per-directory environment variables
+    fswatch       # Cross-platform file change monitor
+    # direnv - managed via programs.direnv in direnv.nix
     # jump - not in nixpkgs, use zoxide instead
     zoxide        # smarter cd command (jump alternative)
 
