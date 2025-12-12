@@ -23,7 +23,7 @@ M.defaults = {
     "GoLand*",
     "WebStorm*",
     "RustRover*",
-    "IntelliJIdea*",
+    "IntelliJ IDEA*",
     "PyCharm*",
     "CLion*",
     "DataGrip*",

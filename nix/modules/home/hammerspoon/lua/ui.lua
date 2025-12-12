@@ -20,7 +20,7 @@ local DEFAULT_PATTERNS = {
   "GoLand*",
   "WebStorm*",
   "RustRover*",
-  "IntelliJIdea*",
+  "IntelliJ IDEA*",
   "PyCharm*",
   "CLion*",
   "DataGrip*",

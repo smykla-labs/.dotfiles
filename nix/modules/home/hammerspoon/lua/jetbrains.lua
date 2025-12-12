@@ -418,6 +418,21 @@ function M.updateFontSize(fontSize, config, log)
     local scriptPath = os.getenv("HOME") .. "/.hammerspoon/change-jetbrains-fonts.groovy"
     local home = os.getenv("HOME")
 
+    -- Mapping from app names to their executable names
+    -- Most IDEs use lowercase app name, but some (like IntelliJ IDEA) are special
+    local executableNames = {
+      ["IntelliJ IDEA"] = "idea",
+      ["IntelliJ IDEA Community Edition"] = "idea",
+      ["IntelliJ IDEA Ultimate"] = "idea",
+      ["PyCharm"] = "pycharm",
+      ["PyCharm Professional"] = "pycharm",
+      ["PyCharm Community Edition"] = "pycharm",
+      ["CLion"] = "clion",
+      ["PhpStorm"] = "phpstorm",
+      ["Rider"] = "rider",
+      ["AppCode"] = "appcode",
+    }
+
     for _, app in ipairs(runningApps) do
       local appName = app:name()
 
@@ -439,7 +454,8 @@ function M.updateFontSize(fontSize, config, log)
             end
 
             -- Get the IDE's command-line launcher name
-            local ideLauncher = ideBaseName:lower()
+            -- Use mapping if exists, otherwise lowercase the app name
+            local ideLauncher = executableNames[appName] or appName:lower()
 
             -- Write font size to temp file for ideScript to read
             local tempFile = os.getenv("TMPDIR") .. "jetbrains-font-size.txt"
