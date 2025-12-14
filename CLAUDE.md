@@ -169,7 +169,7 @@ Dynamic Python environments with **direnv** per-project activation. Packages are
 
 ```bash
 echo 'use_python_env' > .envrc        # With activation message
-echo 'use_python_env --quiet' > .envrc # Silent mode (auto-created use this)
+echo 'use_python_env --quiet' > .envrc # Silent mode
 direnv allow
 ```
 

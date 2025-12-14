@@ -21,8 +21,8 @@
         # Exit if .envrc already exists
         test -f .envrc && return
 
-        # Create .envrc with --quiet flag (auto-created should be silent)
-        echo "use_python_env --quiet" > .envrc
+        # Create .envrc
+        echo "use_python_env" > .envrc
 
         # Add to git exclude if this is a git repo
         if test -e .git
