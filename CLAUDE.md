@@ -159,15 +159,17 @@ Dynamic Python environments with **direnv** per-project activation. Packages are
 
 ### Quick Start
 
-Create `.envrc` in your project:
+**Automatic**: Just `cd` into any directory with `requirements.txt` or `pyproject.toml`. Fish shell automatically:
+
+1. Creates `.envrc` with `use_python_env`
+2. Adds `.envrc` to `.git/info/exclude` (including all worktrees)
+3. Runs `direnv allow`
+
+**Manual**: If auto-detection doesn't trigger, create `.envrc` yourself:
 
 ```bash
-use_python_env
-```
-
-Then allow direnv:
-
-```bash
+echo 'use_python_env' > .envrc        # With activation message
+echo 'use_python_env --quiet' > .envrc # Silent mode (auto-created use this)
 direnv allow
 ```
 
@@ -180,11 +182,11 @@ If neither file exists, a bare Python environment (stdlib only) is provided.
 
 ### Files
 
-**Project files** (choose one or both):
+**Project files**:
 
 ```text
 your-project/
-├── .envrc              # Contains: use_python_env
+├── .envrc              # Auto-created, contains: use_python_env
 ├── requirements.txt    # pip format: requests>=2.28.0
 └── pyproject.toml      # [project.dependencies] section
 ```

@@ -5,7 +5,8 @@
 # the resolved package list from requirements.txt or pyproject.toml.
 #
 # Usage in .envrc:
-#   use_python_env
+#   use_python_env           # Normal mode with activation message
+#   use_python_env --quiet   # Suppress activation message
 #
 # The function will:
 # 1. Parse requirements.txt or pyproject.toml
@@ -16,6 +17,7 @@
 # See: nix/modules/home/direnv.nix for the use_python_env implementation
 { pkgs ? import <nixpkgs> {}
 , packages ? []  # List of nixpkgs python package names (e.g., ["pillow" "pyyaml"])
+, quiet ? false  # Suppress activation message
 }:
 
 let
@@ -46,8 +48,10 @@ pkgs.mkShell {
     PYTHONPATH=${python-with-packages}/${python-with-packages.sitePackages}
     export PYTHONPATH
 
+    ${if !quiet then ''
     echo "🐍 Python environment activated"
     echo "   Python: $(python3 --version)"
     ${if packageCount > 0 then ''echo "   Packages (${toString packageCount}): ${packageList}"'' else ''echo "   Packages: (none)"''}
+    '' else ""}
   '';
 }

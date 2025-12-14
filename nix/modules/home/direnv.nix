@@ -53,13 +53,28 @@ in
       #   - pyproject.toml ([project.dependencies] section)
       #
       # Usage in .envrc:
-      #   use_python_env
+      #   use_python_env           # Normal mode with activation message
+      #   use_python_env --quiet   # Suppress activation message
       #
       use_python_env() {
         local python_shell_nix="''${PYTHON_SHELL_NIX:-${pythonEnvPath}/shell.nix}"
         local pip_to_nix_json="''${PYTHON_PIP_TO_NIX:-${pythonEnvPath}/pip-to-nix.json}"
         local packages=()
         local packages_source=""
+        local quiet=false
+
+        # Parse arguments
+        while [[ $# -gt 0 ]]; do
+          case "$1" in
+            --quiet|-q)
+              quiet=true
+              shift
+              ;;
+            *)
+              shift
+              ;;
+          esac
+        done
 
         # Function to normalize package names (lowercase, underscores to hyphens)
         _normalize_pkg_name() {
@@ -175,6 +190,7 @@ in
       # Packages: ''${packages[*]:-none}
       import (/. + "${pythonEnvPath}/shell.nix") {
         packages = [$nix_pkg_list ];
+        quiet = $quiet;
       }
       NIXEOF
 
