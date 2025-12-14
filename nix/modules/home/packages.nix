@@ -151,6 +151,14 @@
     uv            # Extremely fast Python package installer and resolver
 
     # ============================================================================
+    # Python
+    # ============================================================================
+    (python3.withPackages (ps: with ps; [
+      pillow      # Python Imaging Library (PIL fork)
+      pyyaml      # YAML parser and emitter
+    ]))
+
+    # ============================================================================
     # Network Tools
     # ============================================================================
     ipcalc        # IP subnet calculator
