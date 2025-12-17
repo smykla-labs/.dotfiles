@@ -86,9 +86,11 @@ in
         done
 
         # Parse Python version from mise config files
+        # Searches current directory and all parent directories up to /
         # Checks all supported mise config locations in precedence order
         _get_mise_python_version() {
           local version=""
+          local current_dir="$PWD"
           local toml_files=(
             ".mise.local.toml"
             ".mise.toml"
@@ -98,25 +100,37 @@ in
             ".config/mise/config.toml"
           )
 
-          # Check TOML config files (format: python = "3.11")
-          for toml_file in "''${toml_files[@]}"; do
-            if [[ -f "$toml_file" ]]; then
-              version="$(grep -E '^python\s*=' "$toml_file" 2>/dev/null | awk -F'"' '{print $2}' | head -1)"
+          # Walk up directory tree from current directory to /
+          while true; do
+            # Check TOML config files (format: python = "3.11")
+            for toml_file in "''${toml_files[@]}"; do
+              local full_path="$current_dir/$toml_file"
+              if [[ -f "$full_path" ]]; then
+                version="$(grep -E '^python\s*=' "$full_path" 2>/dev/null | awk -F'"' '{print $2}' | head -1)"
+                if [[ -n "$version" ]]; then
+                  echo "$version"
+                  return
+                fi
+              fi
+            done
+
+            # Check .tool-versions (legacy asdf format: python 3.11)
+            if [[ -f "$current_dir/.tool-versions" ]]; then
+              version="$(grep -E '^python\s+' "$current_dir/.tool-versions" 2>/dev/null | awk '{print $2}' | head -1)"
               if [[ -n "$version" ]]; then
                 echo "$version"
                 return
               fi
             fi
-          done
 
-          # Check .tool-versions (legacy asdf format: python 3.11)
-          if [[ -f .tool-versions ]]; then
-            version="$(grep -E '^python\s+' .tool-versions 2>/dev/null | awk '{print $2}' | head -1)"
-            if [[ -n "$version" ]]; then
-              echo "$version"
-              return
+            # Stop if we reached root
+            if [[ "$current_dir" == "/" ]]; then
+              break
             fi
-          fi
+
+            # Move to parent directory
+            current_dir="$(dirname "$current_dir")"
+          done
         }
 
         # Convert version like "3.11" to nixpkgs format "311"
