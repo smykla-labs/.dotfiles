@@ -11,14 +11,20 @@
     # .zshenv is sourced for ALL zsh shells (interactive, non-interactive, login, etc.)
     # This is perfect for Claude Code's non-interactive shells
     envExtra = ''
+      # Suppress pkg_resources deprecation warning from kathara_lab_checker
+      export PYTHONWARNINGS="ignore::UserWarning"
+
       # Add ~/.local/bin to PATH for mise executable
       export PATH="$HOME/.local/bin:$PATH"
 
       # Claude Code skills CLI wrapper
-      export PATH="$HOME/Projects/github.com/smykla-labs/research/claude-code/skills/_bin:$PATH"
+      export PATH="$HOME/Projects/github.com/smykla-skalski/research/claude-code/skills/_bin:$PATH"
+
+      # Kathara lab tools (klab)
+      export PATH="$HOME/Projects/github.com/Automaat/microsoft-recruitment/learn/linux/networking/.bin:$PATH"
 
       # Python shell.nix location for direnv
-      export DOTFILES_PATH="$HOME/Projects/github.com/smykla-labs/.dotfiles"
+      export DOTFILES_PATH="$HOME/Projects/github.com/smykla-skalski/.dotfiles"
       export PYTHON_SHELL_NIX="$DOTFILES_PATH/nix/python-env/shell.nix"
 
       # Cargo environment

@@ -139,7 +139,7 @@ See [TESTING.md](TESTING.md) for comprehensive documentation.
 
 - `$PROJECTS_PATH` - `$HOME/Projects/github.com`
 - `$MY_PROJECTS_PATH` - `$PROJECTS_PATH/bartsmykla`
-- `$DOTFILES_PATH` - `$PROJECTS_PATH/smykla-labs/.dotfiles`
+- `$DOTFILES_PATH` - `$PROJECTS_PATH/smykla-skalski/.dotfiles`
 - `$SECRETS_PATH` - `$DOTFILES_PATH/secrets`
 
 ## Tool Management

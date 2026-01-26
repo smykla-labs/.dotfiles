@@ -1,5 +1,5 @@
 {
-  description = "Nix configuration for smykla-labs dotfiles";
+  description = "Nix configuration for smykla-skalski dotfiles";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
@@ -20,12 +20,12 @@
     };
 
     af = {
-      url = "github:smykla-labs/af";
+      url = "github:smykla-skalski/af";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     klaudiush = {
-      url = "github:smykla-labs/klaudiush?dir=nix";
+      url = "github:smykla-skalski/klaudiush?dir=nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

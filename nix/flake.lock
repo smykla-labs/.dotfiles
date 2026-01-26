@@ -10,13 +10,13 @@
       "locked": {
         "lastModified": 1766285997,
         "narHash": "sha256-k5WebK7b+EQRk0KPjZYmuAF3Dnj8TJHmPtfD+k3lses=",
-        "owner": "smykla-labs",
+        "owner": "smykla-skalski",
         "repo": "af",
         "rev": "0fb2eada6cb015a0eb36359819f3722f1840d224",
         "type": "github"
       },
       "original": {
-        "owner": "smykla-labs",
+        "owner": "smykla-skalski",
         "repo": "af",
         "type": "github"
       }
@@ -88,14 +88,14 @@
         "dir": "nix",
         "lastModified": 1766287354,
         "narHash": "sha256-dwgEL/TEPpTeCnWPkV0KqQo/fBj7q0eQfj8Un2WSqrs=",
-        "owner": "smykla-labs",
+        "owner": "smykla-skalski",
         "repo": "klaudiush",
         "rev": "7135f18bc88c899aaabb4eb117a7b6bbee4fbc3c",
         "type": "github"
       },
       "original": {
         "dir": "nix",
-        "owner": "smykla-labs",
+        "owner": "smykla-skalski",
         "repo": "klaudiush",
         "type": "github"
       }

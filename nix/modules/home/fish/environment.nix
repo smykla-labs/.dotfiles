@@ -37,9 +37,10 @@
     set --global fish_pager_color_selected_background -r
 
     # Environment variables
+    set --export PYTHONWARNINGS "ignore::UserWarning"
     set --export PROJECTS_PATH $HOME/Projects/github.com
     set --export MY_PROJECTS_PATH $PROJECTS_PATH/bartsmykla
-    set --export DOTFILES_PATH $PROJECTS_PATH/smykla-labs/.dotfiles
+    set --export DOTFILES_PATH $PROJECTS_PATH/smykla-skalski/.dotfiles
     set --export FORTRESS_PATH /Volumes/fortress-carima
     set --export SECRETS_PATH $DOTFILES_PATH/secrets
     set --export PYTHON_SHELL_NIX $DOTFILES_PATH/nix/python-env/shell.nix
@@ -103,7 +104,8 @@
     fish_add_path --global --move "$HOMEBREW_PREFIX/opt/coreutils/libexec/gnubin"
     fish_add_path --global --append "$HOME/.krew/bin"
     fish_add_path --global --append "$HOME/.opencode/bin"
-    fish_add_path --global --append "$PROJECTS_PATH/smykla-labs/research/claude-code/skills/_bin"
+    fish_add_path --global --append "$PROJECTS_PATH/smykla-skalski/research/claude-code/skills/_bin"
+    fish_add_path --global --append "$PROJECTS_PATH/Automaat/microsoft-recruitment/learn/linux/networking/.bin"
 
     # mise tool completions (auto-generated)
     if test -f "$DOTFILES_PATH/tmp/mise-completions.fish"

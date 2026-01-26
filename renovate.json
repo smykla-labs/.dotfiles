@@ -87,7 +87,7 @@
       "description": "Smyklot action managed by sync-smyklot workflow",
       "enabled": false,
       "matchManagers": ["github-actions"],
-      "matchPackageNames": ["smykla-labs/smyklot"]
+      "matchPackageNames": ["smykla-skalski/smyklot"]
     },
     {
       "addLabels": ["mise"],

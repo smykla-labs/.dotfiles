@@ -19,11 +19,17 @@
       # Enable alias expansion in non-interactive shells (required for aliases to work)
       shopt -s expand_aliases
 
+      # Suppress pkg_resources deprecation warning from kathara_lab_checker
+      export PYTHONWARNINGS="ignore::UserWarning"
+
       # Add ~/.local/bin to PATH for mise executable
       export PATH="$HOME/.local/bin:$PATH"
 
       # Claude Code skills CLI wrapper
-      export PATH="$HOME/Projects/github.com/smykla-labs/research/claude-code/skills/_bin:$PATH"
+      export PATH="$HOME/Projects/github.com/smykla-skalski/research/claude-code/skills/_bin:$PATH"
+
+      # Kathara lab tools (klab)
+      export PATH="$HOME/Projects/github.com/Automaat/microsoft-recruitment/learn/linux/networking/.bin:$PATH"
 
       # Source shared shell functions (from Fish functions)
       [ -f "$HOME/.config/shell/functions.sh" ] && source "$HOME/.config/shell/functions.sh"
@@ -44,6 +50,9 @@
 
     # .bashrc content (interactive shells)
     initExtra = ''
+      # Suppress pkg_resources deprecation warning from kathara_lab_checker
+      export PYTHONWARNINGS="ignore::UserWarning"
+
       # Enable bash 4+ features only when available
       if [[ ''${BASH_VERSINFO[0]} -ge 4 ]]; then
         shopt -s globstar checkjobs
@@ -62,13 +71,16 @@
       export PATH="$HOME/.local/bin:$PATH"
 
       # Claude Code skills CLI wrapper
-      export PATH="$HOME/Projects/github.com/smykla-labs/research/claude-code/skills/_bin:$PATH"
+      export PATH="$HOME/Projects/github.com/smykla-skalski/research/claude-code/skills/_bin:$PATH"
+
+      # Kathara lab tools (klab)
+      export PATH="$HOME/Projects/github.com/Automaat/microsoft-recruitment/learn/linux/networking/.bin:$PATH"
 
       # Set BASH_ENV for non-interactive subshells (needed by make)
       export BASH_ENV="$HOME/.bash_env"
 
       # Python shell.nix location for direnv
-      export DOTFILES_PATH="$HOME/Projects/github.com/smykla-labs/.dotfiles"
+      export DOTFILES_PATH="$HOME/Projects/github.com/smykla-skalski/.dotfiles"
       export PYTHON_SHELL_NIX="$DOTFILES_PATH/nix/python-env/shell.nix"
 
       # Source shared shell functions (from Fish functions)
